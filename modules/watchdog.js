@@ -1,14 +1,17 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════
- * 🐕 WATCHDOG MODULE [FIXED]
- * ═══════════════════════════════════════════════════════════════════════
- * ✅ FIXED: All functions now accept logger parameter
+ * =========================================================================
+ * WATCHDOG MODULE [FIXED]
+ * =========================================================================
+ * FIXED: All functions now accept logger parameter
  * Monitors bot for stuck state and auto-recovers
  */
 
-const { checkForErrors } = require("./errors.js");
-const { closePopups } = require("./popups.js");
-const { randomSleep } = require("./humanization.js");
+var errors = require("./errors.js");
+var checkForErrors = errors.checkForErrors;
+var popups = require("./popups.js");
+var closePopups = popups.closePopups;
+var humanization = require("./humanization.js");
+var randomSleep = humanization.randomSleep;
 
 /**
  * Watchdog monitors for stuck state and recovers
@@ -26,17 +29,17 @@ function startWatchdog(
   isBotRunning
 ) {
   threads.start(function () {
-    log.info("🐕 Watchdog thread started");
+    log.info("Watchdog thread started");
 
     while (isBotRunning()) {
       sleep(config.watchdogInterval);
 
-      const now = Date.now();
-      const timeSinceLastAction = now - getLastActionTime();
+      var now = Date.now();
+      var timeSinceLastAction = now - getLastActionTime();
 
       if (timeSinceLastAction > config.stuckTimeout) {
         log.error(
-          `⚠️ Bot stuck for ${Math.round(timeSinceLastAction / 1000)}s!`
+          "Bot stuck for " + Math.round(timeSinceLastAction / 1000) + "s!"
         );
 
         // Try recovery
@@ -55,5 +58,5 @@ function startWatchdog(
 }
 
 module.exports = {
-  startWatchdog,
+  startWatchdog: startWatchdog,
 };

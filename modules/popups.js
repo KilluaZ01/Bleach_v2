@@ -1,13 +1,16 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════
- * ❌ POPUP HANDLER MODULE [FIXED]
- * ═══════════════════════════════════════════════════════════════════════
- * ✅ FIXED: All functions now accept logger parameter
+ * =========================================================================
+ * POPUP HANDLER MODULE [FIXED]
+ * =========================================================================
+ * FIXED: All functions now accept logger parameter
  * Close popups and ads automatically
  */
 
-const { findAndClick, imageExists } = require("./detection.js");
-const { randomSleep } = require("./humanization.js");
+var detection = require("./detection.js");
+var findAndClick = detection.findAndClick;
+var imageExists = detection.imageExists;
+var humanization = require("./humanization.js");
+var randomSleep = humanization.randomSleep;
 
 /**
  * Close any popups or ads
@@ -16,18 +19,19 @@ const { randomSleep } = require("./humanization.js");
  * @param {Function} updateLastAction - Callback to update last action time
  */
 function closePopups(config, log, updateLastAction) {
-  log.info("❌ Checking for popups/ads...");
+  log.info("Checking for popups/ads...");
 
-  const closeButtons = [
+  var closeButtons = [
     "btn_close_x.png",
     "btn_close_x_dark.png",
     "btn_cancel.png",
   ];
 
-  let closed = false;
-  for (let btn of closeButtons) {
+  var closed = false;
+  for (var i = 0; i < closeButtons.length; i++) {
+    var btn = closeButtons[i];
     if (findAndClick(btn, 1500, config, log, updateLastAction)) {
-      log.success(`Closed popup with ${btn}`);
+      log.success("Closed popup with " + btn);
       closed = true;
       randomSleep(1000);
       break;
@@ -43,5 +47,5 @@ function closePopups(config, log, updateLastAction) {
 }
 
 module.exports = {
-  closePopups,
+  closePopups: closePopups,
 };

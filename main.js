@@ -1,27 +1,27 @@
 /**
- * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- *  🤖 AutoX.js RPG/Open-World Game Bot - MAIN ORCHESTRATOR [FIXED]
- * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- *  ✅ CRITICAL FIXES:
+ * ==================================================================
+ *  AutoX.js RPG/Open-World Game Bot - MAIN ORCHESTRATOR [FIXED]
+ * ==================================================================
+ *  [FIXED] CRITICAL FIXES:
  *    - NO auto-execution (module.exports pattern)
  *    - NO global variable redeclarations
  *    - Proper logger passing to all modules
  *    - Single worker thread model
  *    - Clean stop signal handling
  *    - Proper function scope separation
- * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * ==================================================================
  */
 
-// ═══════════════════════════════════════════════════════════════════════
-// 📦 IMPORTS (Loaded once, no re-execution)
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// IMPORTS (Loaded once, no re-execution)
+// =======================================================================
 
 // CRITICAL: Do NOT auto-execute anything at module level
 // Wait for explicit startBot() call from launcher
 
-// ═══════════════════════════════════════════════════════════════════════
-// 🎯 EXPORTED START FUNCTION (Called by launcher ONLY)
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// EXPORTED START FUNCTION (Called by launcher ONLY)
+// =======================================================================
 
 /**
  * Main bot entry point - called by launcher.js when START is pressed
@@ -33,52 +33,43 @@ module.exports.startBot = function (userConfig, logger, storage) {
   // CRITICAL FIX: Use passed logger, don't create global 'log'
   const log = logger;
 
-  log.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  log.info("  🤖 AutoX.js Game Bot Starting...");
-  log.info("  📦 Modular Architecture Loaded");
-  log.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  log.info("==========================================");
+  log.info("  AutoX.js Game Bot Starting...");
+  log.info("  Modular Architecture Loaded");
+  log.info("==========================================");
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // 🔧 INITIALIZATION
-  // ═══════════════════════════════════════════════════════════════════════
-
-  // Wait for accessibility service (defensive check)
-  if (!auto.service) {
-    log.error("❌ Accessibility service not enabled!");
-    log.error("Enable it in Settings → Accessibility → AutoX.js");
-    dialogs.alert(
-      "Error",
-      "Accessibility service is required. Please enable it in Settings."
-    );
-    return; // Exit gracefully
-  }
-
-  auto.waitFor(); // Wait for accessibility service to be ready
-  setScreenMetrics(720, 1280); // Standard resolution for cloud phones
-
-  // Check screen capture permission
-  if (!requestScreenCapture()) {
-    log.error("Screen capture permission denied!");
-    dialogs.alert("Error", "Screen capture permission required!");
-    return;
-  }
-  log.success("Screen capture permission granted");
+  // =======================================================================
+  // INITIALIZATION
+  // =======================================================================
 
   // CRITICAL FIX: Import FIXED modules (or use original names if you renamed them)
-  const { initConfig } = require("./modules/config.js");
-  const { preloadImages, clearImageCache } = require("./modules/imageUtils.js");
-  const { randomSleep, randomRange } = require("./modules/humanization.js");
-  const { runTutorialSkip } = require("./modules/tutorial.js");
-  const { claimAllRewards } = require("./modules/rewards.js");
+  const { initConfig } = require("../AutoXBot/modules/config.js");
+  const {
+    preloadImages,
+    clearImageCache,
+  } = require("../AutoXBot/modules/imageUtils.js");
+
+  const {
+    randomSleep,
+    randomRange,
+  } = require("../AutoXBot/modules/humanization.js");
+  const { runTutorialSkip } = require("../AutoXBot/modules/tutorial.js");
+  const { claimAllRewards } = require("../AutoXBot/modules/rewards.js");
   const {
     autoExplore,
     collectResources,
-  } = require("./modules/exploration_FIXED.js");
-  const { enableAutoBattle, combatRotation } = require("./modules/combat.js");
-  const { closePopups } = require("./modules/popups.js");
-  const { checkForErrors, restartGame } = require("./modules/errors.js");
-  const { startWatchdog } = require("./modules/watchdog.js");
-  const { downloadGame, handleAuth } = require("./modules/auth.js");
+  } = require("../AutoXBot/modules/exploration.js");
+  const {
+    enableAutoBattle,
+    combatRotation,
+  } = require("../AutoXBot/modules/combat.js");
+  const { closePopups } = require("../AutoXBot/modules/popups.js");
+  const {
+    checkForErrors,
+    restartGame,
+  } = require("../AutoXBot/modules/errors.js");
+  const { startWatchdog } = require("../AutoXBot/modules/watchdog.js");
+  const { downloadGame, handleAuth } = require("../AutoXBot/modules/auth.js");
 
   // Initialize configuration
   const CONFIG = initConfig(userConfig);
@@ -87,9 +78,9 @@ module.exports.startBot = function (userConfig, logger, storage) {
   let lastActionTime = Date.now();
   let botRunning = true;
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // 🔧 HELPER FUNCTIONS
-  // ═══════════════════════════════════════════════════════════════════════
+  // =======================================================================
+  // HELPER FUNCTIONS
+  // =======================================================================
 
   /**
    * Update last action timestamp
@@ -119,21 +110,21 @@ module.exports.startBot = function (userConfig, logger, storage) {
     return botRunning && !shouldStop();
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // 🔄 MAIN INFINITE LOOP
-  // ═══════════════════════════════════════════════════════════════════════
+  // =======================================================================
+  // MAIN INFINITE LOAOP
+  // =======================================================================
 
   /**
    * Main bot loop - runs forever until stopped
    */
   function mainLoop() {
-    log.info("🚀 Starting main bot loop...");
+    log.info("Starting main bot loop...");
 
     let loopCount = 0;
 
     while (botRunning) {
       loopCount++;
-      log.info(`━━━━━━━━━━━━ LOOP #${loopCount} ━━━━━━━━━━━━`);
+      log.info(`============ LOOP #${loopCount} ============`);
 
       // CRITICAL: Check for stop signal FIRST
       if (shouldStop()) {
@@ -235,15 +226,15 @@ module.exports.startBot = function (userConfig, logger, storage) {
     log.info("Bot stopped gracefully");
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // 🔐 AUTH LOOP (FIXED: Proper function scope)
-  // ═══════════════════════════════════════════════════════════════════════
+  // =======================================================================
+  // AUTH LOOP (FIXED: Proper function scope)
+  // =======================================================================
 
   /**
    * Authentication loop - handles game download and login
    */
   function authLoop() {
-    log.info("🔐 Starting auth loop...");
+    log.info("Starting auth loop...");
 
     let attempts = 0;
     const maxAttempts = 5;
@@ -276,9 +267,9 @@ module.exports.startBot = function (userConfig, logger, storage) {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // 🎬 STARTUP & EXECUTION (FIXED: Proper function scope)
-  // ═══════════════════════════════════════════════════════════════════════
+  // =======================================================================
+  // STARTUP & EXECUTION (FIXED: Proper function scope)
+  // =======================================================================
 
   /**
    * Main execution function
@@ -336,14 +327,14 @@ module.exports.startBot = function (userConfig, logger, storage) {
     log.info("Cleaning up resources...");
     botRunning = false;
     clearImageCache(log);
-    log.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    log.info("  ✅ Bot execution complete");
-    log.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    log.info("==========================================");
+    log.info("  Bot execution complete");
+    log.info("==========================================");
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // 🚀 ENTRY POINT - Call main function
-  // ═══════════════════════════════════════════════════════════════════════
+  // =======================================================================
+  // ENTRY POINT - Call main function
+  // =======================================================================
 
   // Handle exit gracefully
   events.on("exit", function () {
@@ -356,8 +347,8 @@ module.exports.startBot = function (userConfig, logger, storage) {
   main();
 };
 
-// ═══════════════════════════════════════════════════════════════════════
-// ⚠️ CRITICAL: NO CODE EXECUTION AT MODULE LEVEL
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// [!] CRITICAL: NO CODE EXECUTION AT MODULE LEVEL
+// =======================================================================
 // This file is loaded as a module. It only exports the startBot function.
 // Nothing executes until launcher.js explicitly calls startBot().

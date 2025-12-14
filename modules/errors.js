@@ -1,14 +1,17 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════
- * 🚨 ERROR RECOVERY MODULE [FIXED]
- * ═══════════════════════════════════════════════════════════════════════
- * ✅ FIXED: All functions now accept logger parameter
+ * =========================================================================
+ * ERROR RECOVERY MODULE [FIXED]
+ * =========================================================================
+ * FIXED: All functions now accept logger parameter
  * Detect and recover from errors, crashes, and stuck states
  */
 
-const { getScreen } = require("./detection.js");
-const { imageExists, findAndClick } = require("./detection.js");
-const { randomSleep } = require("./humanization.js");
+var detection = require("./detection.js");
+var getScreen = detection.getScreen;
+var imageExists = detection.imageExists;
+var findAndClick = detection.findAndClick;
+var humanization = require("./humanization.js");
+var randomSleep = humanization.randomSleep;
 
 /**
  * Detect and recover from errors
@@ -39,9 +42,9 @@ function checkForErrors(config, log, updateLastAction, lastActionTime) {
   }
 
   // Black screen / crash
-  const screen = getScreen(log);
+  var screen = getScreen(log);
   if (screen) {
-    const colors = images.findMultiColors(screen, "#000000", [], {
+    var colors = images.findMultiColors(screen, "#000000", [], {
       region: [device.width / 2 - 50, device.height / 2 - 50, 100, 100],
       threshold: 10,
     });
@@ -59,7 +62,7 @@ function checkForErrors(config, log, updateLastAction, lastActionTime) {
 
   // Stuck loading screen
   if (imageExists("loading_icon.png", config, log)) {
-    const now = Date.now();
+    var now = Date.now();
     if (now - lastActionTime > 60000) {
       // 1 minute stuck
       log.error("Stuck on loading screen!");
@@ -79,7 +82,7 @@ function checkForErrors(config, log, updateLastAction, lastActionTime) {
  * @param {Function} updateLastAction - Callback to update last action time
  */
 function restartGame(packageName, log, updateLastAction) {
-  log.warning("🔄 Restarting game...");
+  log.warning("Restarting game...");
 
   // Kill app
   home();
@@ -92,7 +95,7 @@ function restartGame(packageName, log, updateLastAction) {
   randomSleep(1000);
 
   // Relaunch
-  log.info(`Launching ${packageName}...`);
+  log.info("Launching " + packageName + "...");
   launchApp(packageName);
   randomSleep(10000); // Wait for game to load
 
@@ -100,6 +103,6 @@ function restartGame(packageName, log, updateLastAction) {
 }
 
 module.exports = {
-  checkForErrors,
-  restartGame,
+  checkForErrors: checkForErrors,
+  restartGame: restartGame,
 };

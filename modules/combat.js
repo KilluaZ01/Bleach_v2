@@ -1,13 +1,16 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════
- * ⚔️ COMBAT MODULE [FIXED]
- * ═══════════════════════════════════════════════════════════════════════
- * ✅ FIXED: Removed global log dependency - accepts logger param
+ * =========================================================================
+ * COMBAT MODULE [FIXED]
+ * =========================================================================
+ * FIXED: Removed global log dependency - accepts logger param
  * Auto-combat with skill rotation and auto-battle
  */
 
-const { imageExists, findAndClick } = require("./detection.js");
-const { randomSleep } = require("./humanization.js");
+var detection = require("./detection.js");
+var imageExists = detection.imageExists;
+var findAndClick = detection.findAndClick;
+var humanization = require("./humanization.js");
+var randomSleep = humanization.randomSleep;
 
 /**
  * Enable auto-battle if available
@@ -48,27 +51,28 @@ function enableAutoBattle(config, log, updateLastAction) {
 function combatRotation(config, log, updateLastAction) {
   if (!config.autoCombat) return;
 
-  log.info("⚔️ Executing combat rotation...");
+  log.info("Executing combat rotation...");
 
   // Spam attack button
-  for (let i = 0; i < 3; i++) {
+  for (var i = 0; i < 3; i++) {
     if (findAndClick("btn_attack.png", 1000, config, log, updateLastAction)) {
       randomSleep(300);
     }
   }
 
   // Use skills if available
-  const skills = ["btn_skill_1.png", "btn_skill_2.png", "btn_skill_3.png"];
-  skills.forEach((skill) => {
+  var skills = ["btn_skill_1.png", "btn_skill_2.png", "btn_skill_3.png"];
+  for (var j = 0; j < skills.length; j++) {
+    var skill = skills[j];
     if (findAndClick(skill, 1000, config, log, updateLastAction)) {
       randomSleep(500);
     }
-  });
+  }
 
   updateLastAction();
 }
 
 module.exports = {
-  enableAutoBattle,
-  combatRotation,
+  enableAutoBattle: enableAutoBattle,
+  combatRotation: combatRotation,
 };

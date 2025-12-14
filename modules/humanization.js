@@ -1,7 +1,7 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════
- * 🎲 HUMANIZATION MODULE
- * ═══════════════════════════════════════════════════════════════════════
+ * =========================================================================
+ * HUMANIZATION MODULE
+ * =========================================================================
  * Provides random behavior to mimic human actions
  */
 
@@ -14,26 +14,42 @@ function randomRange(min, max) {
 
 /**
  * Random sleep with variance
+ * (ES5-safe: no default params)
  */
-function randomSleep(baseMs, varianceMs = 200) {
-  const sleepTime = baseMs + randomRange(-varianceMs, varianceMs);
-  sleep(Math.max(100, sleepTime));
+function randomSleep(minMs, maxMs) {
+  if (maxMs === undefined) {
+    maxMs = minMs;
+  }
+
+  if (minMs > maxMs) {
+    var temp = minMs;
+    minMs = maxMs;
+    maxMs = temp;
+  }
+
+  sleep(random(minMs, maxMs));
 }
 
 /**
  * Human-like tap with random offset
  */
 function randomTap(x, y, config, log, updateLastAction) {
-  const offsetRange = 15;
-  const tapX = x + randomRange(-offsetRange, offsetRange);
-  const tapY = y + randomRange(-offsetRange, offsetRange);
+  var offsetRange = 15;
+  var tapX = x + randomRange(-offsetRange, offsetRange);
+  var tapY = y + randomRange(-offsetRange, offsetRange);
 
   // Random tap duration for realism
-  const duration = randomRange(50, 150);
+  var duration = randomRange(50, 150);
   press(tapX, tapY, duration);
 
-  log.info(`Tapped at (${tapX}, ${tapY})`);
-  updateLastAction();
+  if (log && log.info) {
+    log.info("Tapped at (" + tapX + ", " + tapY + ")");
+  }
+
+  if (updateLastAction) {
+    updateLastAction();
+  }
+
   randomSleep(randomRange(config.tapDelay[0], config.tapDelay[1]));
 }
 
@@ -41,16 +57,25 @@ function randomTap(x, y, config, log, updateLastAction) {
  * Human-like swipe gesture
  */
 function randomSwipe(x1, y1, x2, y2, log, updateLastAction) {
-  const duration = randomRange(300, 600);
+  var duration = randomRange(300, 600);
   swipe(x1, y1, x2, y2, duration);
-  log.info(`Swiped from (${x1}, ${y1}) to (${x2}, ${y2})`);
-  updateLastAction();
+
+  if (log && log.info) {
+    log.info(
+      "Swiped from (" + x1 + ", " + y1 + ") to (" + x2 + ", " + y2 + ")"
+    );
+  }
+
+  if (updateLastAction) {
+    updateLastAction();
+  }
+
   randomSleep(500);
 }
 
 module.exports = {
-  randomRange,
-  randomSleep,
-  randomTap,
-  randomSwipe,
+  randomRange: randomRange,
+  randomSleep: randomSleep,
+  randomTap: randomTap,
+  randomSwipe: randomSwipe,
 };

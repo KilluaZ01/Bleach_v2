@@ -1,15 +1,15 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════
- * 🎯 CONFIGURATION MODULE
- * ═══════════════════════════════════════════════════════════════════════
+ * =========================================================================
+ * CONFIGURATION MODULE
+ * =========================================================================
  * Handles all bot configuration, constants, and user settings
  */
 
 // Image base path
-const IMG_PATH = "/sdcard/AutoXBot/images/";
+var IMG_PATH = "../images/";
 
 // Default configuration values
-const DEFAULT_CONFIG = {
+var DEFAULT_CONFIG = {
   tutorialSkip: true,
   claimMail: true,
   claimDaily: true,
@@ -40,21 +40,23 @@ const DEFAULT_CONFIG = {
  * Initialize configuration by merging user config with defaults
  */
 function initConfig(userConfig) {
-  const config = {};
+  var config = {};
+  var keys = Object.keys(DEFAULT_CONFIG);
 
-  Object.keys(DEFAULT_CONFIG).forEach((key) => {
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
     if (userConfig[key] === undefined) {
       config[key] = DEFAULT_CONFIG[key];
     } else {
       config[key] = userConfig[key];
     }
-  });
+  }
 
   return config;
 }
 
 module.exports = {
-  IMG_PATH,
-  DEFAULT_CONFIG,
-  initConfig,
+  IMG_PATH: IMG_PATH,
+  DEFAULT_CONFIG: DEFAULT_CONFIG,
+  initConfig: initConfig,
 };

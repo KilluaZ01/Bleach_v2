@@ -1,13 +1,17 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════
- * 🗺️ EXPLORATION MODULE [FIXED]
- * ═══════════════════════════════════════════════════════════════════════
- * ✅ FIXED: All functions now accept logger parameter
+ * =========================================================================
+ * EXPLORATION MODULE [FIXED]
+ * =========================================================================
+ * FIXED: All functions now accept logger parameter
  * Auto-exploration with joystick movement and resource collection
  */
 
-const { findImageAny, findAndClick } = require("./detection.js");
-const { randomRange, randomSleep } = require("./humanization.js");
+var detection = require("./detection.js");
+var findImageAny = detection.findImageAny;
+var findAndClick = detection.findAndClick;
+var humanization = require("./humanization.js");
+var randomRange = humanization.randomRange;
+var randomSleep = humanization.randomSleep;
 
 /**
  * Simulate joystick movement for exploration
@@ -18,23 +22,23 @@ const { randomRange, randomSleep } = require("./humanization.js");
 function autoExplore(config, log, updateLastAction) {
   if (!config.autoExplore) return;
 
-  log.info("🗺️ Auto-exploring world...");
+  log.info("Auto-exploring world...");
 
   // Find joystick base position (usually bottom-left)
-  const joystickResult = findImageAny("joystick_base.png", 2000, config, log);
-  let joystickX = 120; // Default position
-  let joystickY = device.height - 180;
+  var joystickResult = findImageAny("joystick_base.png", 2000, config, log);
+  var joystickX = 120; // Default position
+  var joystickY = device.height - 180;
 
   if (joystickResult.found) {
     joystickX = joystickResult.x;
     joystickY = joystickResult.y;
-    log.info(`Joystick detected at (${joystickX}, ${joystickY})`);
+    log.info("Joystick detected at (" + joystickX + ", " + joystickY + ")");
   } else {
     log.warning("Joystick not found, using default position");
   }
 
   // Random direction movement
-  const directions = [
+  var directions = [
     { name: "up", dx: 0, dy: -60 },
     { name: "down", dx: 0, dy: 60 },
     { name: "left", dx: -60, dy: 0 },
@@ -45,17 +49,17 @@ function autoExplore(config, log, updateLastAction) {
     { name: "down-left", dx: -45, dy: 45 },
   ];
 
-  const direction = directions[randomRange(0, directions.length - 1)];
-  const moveDuration = randomRange(
+  var direction = directions[randomRange(0, directions.length - 1)];
+  var moveDuration = randomRange(
     config.exploreMoveDuration[0],
     config.exploreMoveDuration[1]
   );
 
-  log.info(`Moving ${direction.name} for ${moveDuration}ms`);
+  log.info("Moving " + direction.name + " for " + moveDuration + "ms");
 
   // Simulate joystick drag
-  const endX = joystickX + direction.dx;
-  const endY = joystickY + direction.dy;
+  var endX = joystickX + direction.dx;
+  var endY = joystickY + direction.dy;
 
   // Long press to simulate continuous movement
   press(joystickX, joystickY, 100);
@@ -72,7 +76,7 @@ function autoExplore(config, log, updateLastAction) {
  * @param {Function} updateLastAction - Callback to update last action time
  */
 function collectResources(config, log, updateLastAction) {
-  log.info("⛏️ Checking for collectible resources...");
+  log.info("Checking for collectible resources...");
 
   if (
     findAndClick(
@@ -90,6 +94,6 @@ function collectResources(config, log, updateLastAction) {
 }
 
 module.exports = {
-  autoExplore,
-  collectResources,
+  autoExplore: autoExplore,
+  collectResources: collectResources,
 };

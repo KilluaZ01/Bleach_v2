@@ -1,13 +1,15 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════
- * 📬 REWARDS MODULE [FIXED]
- * ═══════════════════════════════════════════════════════════════════════
- * ✅ FIXED: All functions now accept logger parameter
+ * =========================================================================
+ * REWARDS MODULE [FIXED]
+ * =========================================================================
+ * FIXED: All functions now accept logger parameter
  * Auto-claim mail, daily rewards, and events
  */
 
-const { findAndClick } = require("./detection.js");
-const { randomSleep } = require("./humanization.js");
+var detection = require("./detection.js");
+var findAndClick = detection.findAndClick;
+var humanization = require("./humanization.js");
+var randomSleep = humanization.randomSleep;
 
 /**
  * Claim mail rewards
@@ -18,7 +20,7 @@ const { randomSleep } = require("./humanization.js");
 function claimMailRewards(config, log, updateLastAction) {
   if (!config.claimMail) return;
 
-  log.info("📬 Checking mail rewards...");
+  log.info("Checking mail rewards...");
 
   // Find and click mail icon
   if (
@@ -39,8 +41,8 @@ function claimMailRewards(config, log, updateLastAction) {
       randomSleep(1000);
     } else {
       // Try individual claim buttons
-      let claimed = 0;
-      for (let i = 0; i < 5; i++) {
+      var claimed = 0;
+      for (var i = 0; i < 5; i++) {
         if (
           findAndClick("btn_claim.png", 1500, config, log, updateLastAction)
         ) {
@@ -49,7 +51,7 @@ function claimMailRewards(config, log, updateLastAction) {
         }
       }
       if (claimed > 0) {
-        log.success(`Claimed ${claimed} mail rewards individually`);
+        log.success("Claimed " + claimed + " mail rewards individually");
       }
     }
 
@@ -70,12 +72,13 @@ function claimMailRewards(config, log, updateLastAction) {
 function claimDailyRewards(config, log, updateLastAction) {
   if (!config.claimDaily) return;
 
-  log.info("🎁 Checking daily rewards...");
+  log.info("Checking daily rewards...");
 
   // Find and click gift/event icons
-  const icons = ["icon_gift.png", "icon_event.png"];
+  var icons = ["icon_gift.png", "icon_event.png"];
 
-  for (let icon of icons) {
+  for (var i = 0; i < icons.length; i++) {
+    var icon = icons[i];
     if (findAndClick(icon, 3000, config, log, updateLastAction)) {
       randomSleep(2000, 500);
 
@@ -84,7 +87,7 @@ function claimDailyRewards(config, log, updateLastAction) {
         findAndClick("btn_claim.png", 3000, config, log, updateLastAction) ||
         findAndClick("btn_claim_all.png", 3000, config, log, updateLastAction)
       ) {
-        log.success(`Claimed from ${icon}`);
+        log.success("Claimed from " + icon);
         randomSleep(1500);
         findAndClick("btn_confirm.png", 2000, config, log, updateLastAction);
         randomSleep(1000);
@@ -104,14 +107,14 @@ function claimDailyRewards(config, log, updateLastAction) {
  * @param {Function} updateLastAction - Callback to update last action time
  */
 function claimAllRewards(config, log, updateLastAction) {
-  log.info("💰 Starting reward claim cycle...");
+  log.info("Starting reward claim cycle...");
   claimMailRewards(config, log, updateLastAction);
   claimDailyRewards(config, log, updateLastAction);
   log.info("Reward claim cycle complete");
 }
 
 module.exports = {
-  claimMailRewards,
-  claimDailyRewards,
-  claimAllRewards,
+  claimMailRewards: claimMailRewards,
+  claimDailyRewards: claimDailyRewards,
+  claimAllRewards: claimAllRewards,
 };

@@ -1,22 +1,22 @@
 /**
- * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- *  🤖 AutoX.js RPG/Open-World Game Bot Launcher [FIXED & STABLE]
- * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- *  ✅ Fixed Issues:
+ * ==================================================================
+ *  AutoX.js RPG/Open-World Game Bot Launcher [FIXED & STABLE]
+ * ==================================================================
+ *  [FIXED] Issues:
  *    - Single entry point enforcement
  *    - Safe thread management with proper cleanup
  *    - Global scope hygiene (no redeclarations)
  *    - Proper module loading pattern
  *    - UI responsiveness maintained
  *    - Cloud phone stability enhancements
- * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * ==================================================================
  */
 
 "ui";
 
-// ═══════════════════════════════════════════════════════════════════════
-// 🎨 GLOBAL STYLING & THEME
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// GLOBAL STYLING & THEME
+// =======================================================================
 
 const THEME = {
   bg_dark: "#0a0e27", // Deep dark blue
@@ -29,15 +29,15 @@ const THEME = {
   border: "#2d3561", // Border color
 };
 
-// ═══════════════════════════════════════════════════════════════════════
-// 🖼️ UI LAYOUT
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// UI LAYOUT
+// =======================================================================
 
 ui.statusBarColor(THEME.bg_dark);
 
 ui.layout(
   <vertical bg="{{THEME.bg_dark}}" padding="0">
-    {/* ━━━ Header Bar ━━━ */}
+    {/* === Header Bar === */}
     <linear
       bg="{{THEME.bg_card}}"
       w="*"
@@ -77,10 +77,10 @@ ui.layout(
       </card>
     </linear>
 
-    {/* ━━━ Main Content ━━━ */}
+    {/* === Main Content === */}
     <scroll layout_weight="1">
       <vertical padding="16" space="16">
-        {/* ━━━ Control Panel Card ━━━ */}
+        {/* === Control Panel Card === */}
         <card
           cardBackgroundColor="{{THEME.bg_card}}"
           cardCornerRadius="12dp"
@@ -145,7 +145,7 @@ ui.layout(
           </vertical>
         </card>
 
-        {/* ━━━ Settings Card ━━━ */}
+        {/* === Settings Card === */}
         <card
           cardBackgroundColor="{{THEME.bg_card}}"
           cardCornerRadius="12dp"
@@ -244,7 +244,7 @@ ui.layout(
           </vertical>
         </card>
 
-        {/* ━━━ Log Display Card ━━━ */}
+        {/* === Log Display Card === */}
         <card
           cardBackgroundColor="{{THEME.bg_card}}"
           cardCornerRadius="12dp"
@@ -293,7 +293,7 @@ ui.layout(
           </vertical>
         </card>
 
-        {/* ━━━ Info Card ━━━ */}
+        {/* === Info Card === */}
         <card
           cardBackgroundColor="{{THEME.bg_card}}"
           cardCornerRadius="12dp"
@@ -333,7 +333,7 @@ ui.layout(
       </vertical>
     </scroll>
 
-    {/* ━━━ Footer ━━━ */}
+    {/* === Footer === */}
     <linear bg="{{THEME.bg_card}}" w="*" h="50" gravity="center">
       <text
         text="Made with ⚡ AutoX.js | Cloud Phone Optimized"
@@ -344,9 +344,9 @@ ui.layout(
   </vertical>
 );
 
-// ═══════════════════════════════════════════════════════════════════════
-// 💾 STORAGE & SETTINGS
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// STORAGE & SETTINGS
+// =======================================================================
 
 const storage = storages.create("autox_bot_config");
 
@@ -385,9 +385,9 @@ ui.chkAutoCombat.on("check", saveSettings);
 ui.chkSlowMode.on("check", saveSettings);
 ui.inputLoopDelay.on("text_changed", saveSettings);
 
-// ═══════════════════════════════════════════════════════════════════════
-// 📝 LOGGING SYSTEM (Thread-safe)
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// LOGGING SYSTEM (Thread-safe)
+// =======================================================================
 
 function getTimestamp() {
   const now = new Date();
@@ -406,7 +406,7 @@ function logInfo(msg) {
 function logSuccess(msg) {
   const timestamp = getTimestamp();
   ui.run(() => {
-    ui.logText.append(`[${timestamp}] [✓] ${msg}\n`);
+    ui.logText.append(`[${timestamp}] [OK] ${msg}\n`);
     ui.logScroll.fullScroll(android.widget.ScrollView.FOCUS_DOWN);
   });
   console.log(`[SUCCESS] ${msg}`);
@@ -415,7 +415,7 @@ function logSuccess(msg) {
 function logError(msg) {
   const timestamp = getTimestamp();
   ui.run(() => {
-    ui.logText.append(`[${timestamp}] [✗ ERROR] ${msg}\n`);
+    ui.logText.append(`[${timestamp}] [ERROR] ${msg}\n`);
     ui.logScroll.fullScroll(android.widget.ScrollView.FOCUS_DOWN);
   });
   console.error(`[ERROR] ${msg}`);
@@ -424,7 +424,7 @@ function logError(msg) {
 function logWarning(msg) {
   const timestamp = getTimestamp();
   ui.run(() => {
-    ui.logText.append(`[${timestamp}] [⚠] ${msg}\n`);
+    ui.logText.append(`[${timestamp}] [WARN] ${msg}\n`);
     ui.logScroll.fullScroll(android.widget.ScrollView.FOCUS_DOWN);
   });
   console.warn(`[WARNING] ${msg}`);
@@ -435,9 +435,9 @@ ui.btnClearLog.on("click", () => {
   ui.logText.setText("[System] Log cleared.\n");
 });
 
-// ═══════════════════════════════════════════════════════════════════════
-// 🎮 BOT CONTROL - START/STOP (FIXED: Proper thread management)
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// BOT CONTROL - START/STOP (FIXED: Proper thread management)
+// =======================================================================
 
 let botThread = null;
 let isRunning = false;
@@ -494,9 +494,19 @@ ui.btnStart.on("click", () => {
   // FIXED: Run bot in separate thread with proper error handling
   botThread = threads.start(function () {
     try {
-      // CRITICAL FIX: Load main.js as a module, don't execute it
-      const botModule = require("./main_FIXED.js");
-      logError("Bot crashed: " + e.message);
+      // CRITICAL FIX: Load main.js as a module and call startBot
+      const botModule = require("../AutoXBot/main.js");
+
+      // Call the exported startBot function with config, logger, and storage
+      if (botModule && botModule.startBot) {
+        botModule.startBot(config, logger, storage);
+      } else {
+        logError("Bot crashed: main.js does not export startBot function");
+        updateStatus("ERROR");
+        isRunning = false;
+      }
+    } catch (e) {
+      logError("Bot encountered an error: " + e.message);
       logError("Stack: " + e.stack);
       updateStatus("ERROR");
       isRunning = false;
@@ -532,9 +542,9 @@ ui.btnStop.on("click", () => {
   }, 5000);
 });
 
-// ═══════════════════════════════════════════════════════════════════════
-// 🛡️ PERMISSION CHECKS
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// PERMISSION CHECKS
+// =======================================================================
 
 // Request screen capture permission on startup
 threads.start(function () {
@@ -545,7 +555,7 @@ threads.start(function () {
     logWarning("Accessibility service NOT enabled!");
     logWarning("Please enable it manually in Settings → Accessibility");
   } else {
-    logSuccess("Accessibility service enabled ✓");
+    logSuccess("Accessibility service enabled");
   }
 
   // Request screen capture
@@ -557,13 +567,13 @@ threads.start(function () {
     );
     images.requestScreenCapture(true); // Force request
   } else {
-    logSuccess("Screen capture permission granted ✓");
+    logSuccess("Screen capture permission granted");
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════════
-// 🚪 EXIT HANDLING
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// EXIT HANDLING
+// =======================================================================
 
 events.on("exit", function () {
   if (botThread && botThread.isAlive()) {
@@ -589,13 +599,13 @@ ui.emitter.on("back_pressed", (e) => {
     });
 });
 
-// ═══════════════════════════════════════════════════════════════════════
-// 🎯 STARTUP MESSAGE
-// ═══════════════════════════════════════════════════════════════════════
+// =======================================================================
+// STARTUP MESSAGE
+// =======================================================================
 
-logInfo("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-logInfo("🤖 AutoX Bot Launcher v2.0 (FIXED)");
-logInfo("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+logInfo("====================================");
+logInfo("AutoX Bot Launcher v2.0 (FIXED)");
+logInfo("====================================");
 logInfo("Launcher UI loaded successfully");
 logInfo("Ensure images are in: /sdcard/AutoXBot/images/");
 logInfo("Configure settings and press START to begin");
