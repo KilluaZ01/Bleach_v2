@@ -1,95 +1,130 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════
- * 🔐 AUTH MODULE [FIXED]
- * ═══════════════════════════════════════════════════════════════════════
- * ✅ FIXED: Removed global 'log' dependency - now accepts logger as param
+ * =========================================================================
+ * AUTH MODULE [UPDATED FOR DEBUGGING]
+ * =========================================================================
+ * Added detailed logging to debug where the bot gets stuck
  */
 
-const { findAndClick, imageExists } = require("./detection");
-const { randomSleep } = require("./humanization");
+var detection = require("./detection");
+var findImageAndClick = detection.findImageAndClick;
+var imageExists = detection.imageExists;
+var humanization = require("./humanization");
+var randomSleep = humanization.randomSleep;
 
-const PLAY_STORE_PKG = "com.android.vending";
-const GAME_PKG_NAME = "com.bladetw.bd";
+var PLAY_STORE_PKG = "com.android.vending";
+var GAME_PKG_NAME = "com.bleach.apj";
 
 /**
  * Uninstall game (if exists), open Play Store,
  * and navigate to game install page using image detection
  * @param {Object} logger - Logger object with info/success/error/warning methods
  * @param {String} gamePkgName - Game package name
+ * @param {Function} updateLastAction - Callback to update last action time
  */
-function downloadGame(logger, gamePkgName = GAME_PKG_NAME) {
-  logger.info("⬇️ Preparing fresh game install");
+function downloadGame(logger, gamePkgName, updateLastAction) {
+  if (gamePkgName === undefined) {
+    gamePkgName = GAME_PKG_NAME;
+  }
 
-  // 1️⃣ Uninstall if already installed
-  if (app.isInstalled(gamePkgName)) {
-    logger.info("🗑️ Game already installed, uninstalling...");
+  logger.info("Preparing fresh game install");
+
+  // 1. Uninstall if already installed
+  if (app.getAppName(gamePkgName)) {
+    logger.info("Game already installed, uninstalling...");
     app.uninstall(gamePkgName);
+    randomSleep(2000, 2500);
 
     // Wait until uninstall completes
-    let timeout = Date.now() + 60_000;
-    while (app.isInstalled(gamePkgName)) {
-      sleep(1000);
+    var timeout = Date.now() + 60000;
+    while (app.getAppName(gamePkgName)) {
+      randomSleep(1000, 1500);
       if (Date.now() > timeout) {
-        throw new Error("❌ Uninstall timeout");
+        throw new Error("Uninstall timeout");
       }
     }
-    logger.success("✅ Uninstall complete");
+    logger.success("Uninstall complete");
   }
 
   randomSleep(1500, 2500);
 
-  // 2️⃣ Launch Play Store
-  logger.info("🏪 Opening Play Store");
+  // 2. Launch Play Store
+  logger.info("Opening Play Store");
   app.launchPackage(PLAY_STORE_PKG);
-  randomSleep(3000, 5000);
+  randomSleep(8000);
 
-  // 3️⃣ Navigate Play Store UI
-  navigatePlayStore(logger, gamePkgName);
+  // 3. Navigate Play Store UI
+  navigatePlayStore(logger, gamePkgName, updateLastAction);
 }
 
 /**
  * Handles Play Store UI flow
  * @param {Object} logger - Logger object
  * @param {String} gamePkgName - Game package name
+ * @param {Function} updateLastAction - Callback to update last action time
  */
-function navigatePlayStore(logger, gamePkgName = GAME_PKG_NAME) {
-  logger.info("🔍 Navigating Play Store UI");
-
-  // Accept Play Store dialogs
-  if (imageExists("play_accept.png")) {
-    findAndClick("play_accept.png");
-    randomSleep(1000, 1500);
+function navigatePlayStore(logger, gamePkgName, updateLastAction) {
+  if (gamePkgName === undefined) {
+    gamePkgName = GAME_PKG_NAME;
   }
 
+  logger.info("Navigating Play Store UI");
+
   // Search icon
-  if (imageExists("play_search_icon.png")) {
-    findAndClick("play_search_icon.png");
-    randomSleep(1000, 1500);
+  logger.info("Checking for search icon...");
+  if (imageExists("play_search_icon.png", logger)) {
+    logger.info("Search icon found, clicking...");
+    findImageAndClick("play_search_icon.png", logger);
+    randomSleep(2500);
+  } else {
+    logger.warning("Search icon not found");
   }
 
   // Search input field
-  if (imageExists("play_search_input.png")) {
-    findAndClick("play_search_input.png");
-    randomSleep(500, 800);
+  logger.info("Checking for search input field...");
+  if (imageExists("play_search_input.png", logger)) {
+    logger.info("Search input field found, clicking...");
+    findImageAndClick("play_search_input.png", logger);
+    randomSleep(6000);
 
     // Type game name (not pkg name)
-    setText("Your Game Name Here");
-    randomSleep(800, 1200);
-    press("enter");
+    logger.info("Typing game name...");
+    setText("Bleach Soul Resonance");
+    randomSleep(1200);
+    click(670, 1230);
+    randomSleep(5000);
+  } else {
+    logger.warning("Search input field not found");
   }
 
-  randomSleep(3000, 5000);
+  randomSleep(5000);
 
   // Select game from results
-  if (imageExists("game_card.png")) {
-    findAndClick("game_card.png");
-    randomSleep(3000, 4000);
+  logger.info("Checking for game card in search results...");
+  if (imageExists("game_card.png", logger)) {
+    logger.info("Game card found, clicking...");
+    findImageAndClick("game_card.png", logger);
+    randomSleep(4000);
+  } else {
+    logger.warning("Game card not found in search results");
   }
 
   // Install button
-  if (imageExists("install_button.png")) {
-    logger.info("⬇️ Installing game");
-    findAndClick("install_button.png");
+  logger.info("Checking for install button...");
+  if (imageExists("play_install_button.png", logger)) {
+    logger.info("Install button found, clicking...");
+    findImageAndClick("play_install_button.png", logger);
+    randomSleep(4000);
+  } else {
+    logger.warning("Install button not found");
+  }
+
+  logger.info("Checking for okay button...");
+  if (imageExists("play_okay_button.png", logger)) {
+    logger.info("Okay button found, clicking...");
+    findImageAndClick("play_okay_button.png", logger);
+    randomSleep(3000);
+  } else {
+    logger.warning("Okay button not found");
   }
 
   waitForInstall(logger);
@@ -100,56 +135,71 @@ function navigatePlayStore(logger, gamePkgName = GAME_PKG_NAME) {
  * @param {Object} logger - Logger object
  */
 function waitForInstall(logger) {
-  logger.info("⏳ Waiting for installation");
+  logger.info("Waiting for installation");
 
-  let timeout = Date.now() + 10 * 60_000; // 10 min max
+  var timeout = Date.now() + 10 * 80000; // 10 min max
 
   while (true) {
-    if (imageExists("open_button.png")) {
-      logger.success("✅ Game installed");
+    logger.info("Checking for open button...");
+    if (imageExists("open_button.png", logger)) {
+      logger.success("Game installed");
+      launchApp("BLEACH: Soul Resonance");
+      sleep(70000); // Wait for initial load
       return;
     }
 
     if (Date.now() > timeout) {
-      throw new Error("❌ Install timeout");
+      throw new Error("Install timeout");
     }
 
-    sleep(5000);
+    sleep(80000);
   }
 }
 
 /**
  * Handle authentication flow (guest login, terms, etc.)
  * @param {Object} logger - Logger object
+ * @param {Function} updateLastAction - Callback to update last action time
  */
-function handleAuth(logger) {
-  logger.info("🔐 Checking login / guest state");
+function handleAuth(logger, updateLastAction) {
+  logger.info("Checking login / guest state");
 
-  if (imageExists("terms_accept.png")) {
-    findAndClick("terms_accept.png");
-    randomSleep(800, 1200);
+  logger.info("Checking for terms accept button...");
+  click(286, 329);
+  randomSleep(4000);
+
+  click(286, 386);
+  randomSleep(4000);
+
+  click(642, 487);
+  randomSleep(10000);
+
+  click(640, 530);
+  randomSleep(420000);
+
+  logger.info("Checking close button...");
+  for (var i = 0; i < 5; i++) {
+    if (imageExists("close_button.png", logger)) {
+      logger.info("Close button found, clicking...");
+      findImageAndClick("close_button.png", logger);
+      randomSleep(5000);
+    } else {
+      logger.warning("Guest login button not found");
+      randomSleep(30000);
+    }
   }
 
-  if (imageExists("guest_login.png")) {
-    logger.info("👤 Selecting Guest Login");
-    findAndClick("guest_login.png");
-    randomSleep(1500, 2500);
-  }
+  // Guest Account
+  click(764, 620);
+  randomSleep(25000);
 
-  if (imageExists("guest_confirm.png")) {
-    findAndClick("guest_confirm.png");
-    randomSleep(1500, 2500);
-  }
-
-  if (imageExists("server_confirm.png")) {
-    findAndClick("server_confirm.png");
-    randomSleep(1000, 1500);
-  }
-
-  logger.success("✅ Auth phase complete");
+  // Start Game
+  click(645, 653);
+  randomSleep(40000);
+  logger.success("Auth phase complete");
 }
 
 module.exports = {
-  downloadGame,
-  handleAuth,
+  downloadGame: downloadGame,
+  handleAuth: handleAuth,
 };
