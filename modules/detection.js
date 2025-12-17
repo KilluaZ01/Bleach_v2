@@ -54,7 +54,7 @@ function findImageAny(imageName, log) {
     return { found: false };
   }
 
-  var point = images.findImage(screen, template, { threshold: 0.8 });
+  var point = images.findImage(screen, template, { threshold: 0.75 });
   screen.recycle();
   template.recycle();
 

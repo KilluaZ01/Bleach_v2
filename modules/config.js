@@ -6,7 +6,7 @@
  */
 
 // Image base path
-var IMG_PATH = "../images/";
+var IMG_PATH = "/sdcard/AutoXBot/images/";
 
 // Default configuration values
 var DEFAULT_CONFIG = {
@@ -30,6 +30,16 @@ var DEFAULT_CONFIG = {
 
   // Watchdog settings
   watchdogInterval: 30000, // Check every 30 seconds
+};
+
+var EXPLORE = {
+  maxSteps: 8,
+  swipeDistance: 140,
+  stepDelay: [250, 450],
+  centerX: 643,
+  centerY: 562,
+  joystickX: 236,
+  joystickY: 531,
 
   // Exploration settings
   exploreMoveDuration: [2000, 4000], // Random movement duration
@@ -59,4 +69,5 @@ module.exports = {
   IMG_PATH: IMG_PATH,
   DEFAULT_CONFIG: DEFAULT_CONFIG,
   initConfig: initConfig,
+  EXPLORE: EXPLORE,
 };

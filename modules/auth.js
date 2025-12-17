@@ -34,6 +34,9 @@ function downloadGame(logger, gamePkgName, updateLastAction) {
     app.uninstall(gamePkgName);
     randomSleep(2000, 2500);
 
+    click(583, 770);
+    randomSleep(2000); // Okay for uninstall
+
     // Wait until uninstall completes
     var timeout = Date.now() + 60000;
     while (app.getAppName(gamePkgName)) {
@@ -175,7 +178,7 @@ function handleAuth(logger, updateLastAction) {
   randomSleep(10000);
 
   click(640, 530);
-  randomSleep(420000);
+  randomSleep(820000);
 
   logger.info("Checking close button...");
   for (var i = 0; i < 5; i++) {
@@ -183,6 +186,7 @@ function handleAuth(logger, updateLastAction) {
       logger.info("Close button found, clicking...");
       findImageAndClick("close_button.png", logger);
       randomSleep(5000);
+      break;
     } else {
       logger.warning("Guest login button not found");
       randomSleep(30000);

@@ -134,22 +134,22 @@ module.exports.startBot = function (userConfig, logger, storage) {
       }
 
       try {
-        // Priority 1: Error recovery
-        if (checkForErrors(CONFIG, log, updateLastAction, lastActionTime)) {
-          log.info("Recovered from error, continuing...");
-          randomSleep(3000);
-          continue;
-        }
+        // // Priority 1: Error recovery
+        // if (checkForErrors(CONFIG, log, updateLastAction, lastActionTime)) {
+        //   log.info("Recovered from error, continuing...");
+        //   randomSleep(3000);
+        //   continue;
+        // }
 
-        // Check stop again after slow operation
-        if (shouldStop()) break;
+        // // Check stop again after slow operation
+        // if (shouldStop()) break;
 
-        // Priority 2: Close popups
-        closePopups(CONFIG, log, updateLastAction);
-        randomSleep(500);
+        // // Priority 2: Close popups
+        // closePopups(CONFIG, log, updateLastAction);
+        // randomSleep(500);
 
-        // Check stop signal
-        if (shouldStop()) break;
+        // // Check stop signal
+        // if (shouldStop()) break;
 
         // Priority 3: Tutorial skip (if enabled)
         if (CONFIG.tutorialSkip) {
@@ -158,17 +158,17 @@ module.exports.startBot = function (userConfig, logger, storage) {
 
         if (shouldStop()) break;
 
-        // Priority 4: Enable auto-battle
-        enableAutoBattle(CONFIG, log, updateLastAction);
-        randomSleep(500);
+        // // Priority 4: Enable auto-battle
+        // enableAutoBattle(CONFIG, log, updateLastAction);
+        // randomSleep(500);
 
-        if (shouldStop()) break;
+        // if (shouldStop()) break;
 
-        // Priority 5: Claim rewards
-        claimAllRewards(CONFIG, log, updateLastAction);
-        randomSleep(1000);
+        // // Priority 5: Claim rewards
+        // claimAllRewards(CONFIG, log, updateLastAction);
+        // randomSleep(1000);
 
-        if (shouldStop()) break;
+        // if (shouldStop()) break;
 
         // Priority 6: Exploration
         if (CONFIG.autoExplore) {
@@ -191,11 +191,11 @@ module.exports.startBot = function (userConfig, logger, storage) {
 
         if (shouldStop()) break;
 
-        // Priority 8: Resource collection
-        collectResources(CONFIG, log, updateLastAction);
-        randomSleep(1000);
+        // // Priority 8: Resource collection
+        // collectResources(CONFIG, log, updateLastAction);
+        // randomSleep(1000);
 
-        if (shouldStop()) break;
+        // if (shouldStop()) break;
 
         // Slow mode extra delay
         if (CONFIG.slowMode) {
@@ -300,7 +300,7 @@ module.exports.startBot = function (userConfig, logger, storage) {
 
       // Wait for game to be ready
       log.info("Waiting 5 seconds for game to be ready...");
-      sleep(5000);
+      randomSleep(5000);
 
       if (shouldStop()) {
         log.warning("Stop signal received before main loop");

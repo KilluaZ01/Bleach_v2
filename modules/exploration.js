@@ -6,12 +6,54 @@
  * Auto-exploration with joystick movement and resource collection
  */
 
+const config = require("./config.js");
 var detection = require("./detection.js");
 var findImageAny = detection.findImageAny;
 var findAndClick = detection.findAndClick;
 var humanization = require("./humanization.js");
 var randomRange = humanization.randomRange;
 var randomSleep = humanization.randomSleep;
+var explore = config.EXPLORE;
+
+/**
+ * Find marker by color in ROI
+ * @returns {Object|null} { x, y } or null
+ */
+function findMarkerByColor(log) {
+  var img = captureScreen();
+  if (!img) return null;
+
+  // ROI (same as Python example)
+  var x1 = 467,
+    y1 = 513,
+    x2 = 810,
+    y2 = 643;
+
+  // Marker color (#FCD9FB example converted to RGB tolerance)
+  var color = "#FCD9FB";
+  var threshold = 20;
+
+  var point = images.findColor(img, color, {
+    region: [x1, y1, x2 - x1, y2 - y1],
+    threshold: threshold,
+  });
+
+  img.recycle();
+
+  if (point) {
+    log.info("Marker found at (" + point.x + ", " + point.y + ")");
+    return { x: point.x, y: point.y };
+  }
+
+  log.warning("Marker not found");
+  return null;
+}
+
+function normalize(dx, dy) {
+  var length = Math.sqrt(dx * dx + dy * dy);
+  if (length === 0) return { x: 0, y: 0 };
+  return { x: dx / length, y: dy / length };
+}
 
 /**
  * Simulate joystick movement for exploration
@@ -22,51 +64,65 @@ var randomSleep = humanization.randomSleep;
 function autoExplore(config, log, updateLastAction) {
   if (!config.autoExplore) return;
 
-  log.info("Auto-exploring world...");
+  log.info("Auto-exploring using marker feedback loop...");
 
-  // Find joystick base position (usually bottom-left)
-  var joystickResult = findImageAny("joystick_base.png", 2000, config, log);
-  var joystickX = 120; // Default position
-  var joystickY = device.height - 180;
+  var steps = 0;
 
-  if (joystickResult.found) {
-    joystickX = joystickResult.x;
-    joystickY = joystickResult.y;
-    log.info("Joystick detected at (" + joystickX + ", " + joystickY + ")");
-  } else {
-    log.warning("Joystick not found, using default position");
+  while (steps < explore.maxSteps) {
+    // Re-detect marker every loop
+    var marker = findMarkerByColor(log);
+    if (!marker) {
+      log.warning("Marker lost, stopping movement");
+      break;
+    }
+
+    // Direction vector
+    var dx = marker.x - explore.centerX;
+    var dy = marker.y - explore.centerY;
+
+    var length = Math.sqrt(dx * dx + dy * dy);
+    if (length < 10) {
+      log.success("Reached marker center");
+      break;
+    }
+
+    var nx = dx / length;
+    var ny = dy / length;
+
+    // Joystick swipe target
+    var jx = explore.joystickX;
+    var jy = explore.joystickY;
+
+    var jx2 = jx + nx * explore.swipeDistance;
+    var jy2 = jy + ny * explore.swipeDistance;
+
+    var duration = randomRange(
+      config.exploreMoveDuration[0],
+      config.exploreMoveDuration[1]
+    );
+
+    log.info(
+      "Step " +
+        (steps + 1) +
+        ": moving dx=" +
+        Math.round(dx) +
+        " dy=" +
+        Math.round(dy)
+    );
+
+    // 4️⃣ Move
+    press(jx, jy, 100);
+    swipe(jx, jy, jx2, jy2, duration);
+
+    updateLastAction();
+
+    // Small wait before next detection
+    randomSleep(
+      randomRange(config.explore.stepDelay[0], config.explore.stepDelay[1])
+    );
+
+    steps++;
   }
-
-  // Random direction movement
-  var directions = [
-    { name: "up", dx: 0, dy: -60 },
-    { name: "down", dx: 0, dy: 60 },
-    { name: "left", dx: -60, dy: 0 },
-    { name: "right", dx: 60, dy: 0 },
-    { name: "up-right", dx: 45, dy: -45 },
-    { name: "up-left", dx: -45, dy: -45 },
-    { name: "down-right", dx: 45, dy: 45 },
-    { name: "down-left", dx: -45, dy: 45 },
-  ];
-
-  var direction = directions[randomRange(0, directions.length - 1)];
-  var moveDuration = randomRange(
-    config.exploreMoveDuration[0],
-    config.exploreMoveDuration[1]
-  );
-
-  log.info("Moving " + direction.name + " for " + moveDuration + "ms");
-
-  // Simulate joystick drag
-  var endX = joystickX + direction.dx;
-  var endY = joystickY + direction.dy;
-
-  // Long press to simulate continuous movement
-  press(joystickX, joystickY, 100);
-  randomSleep(50);
-  swipe(joystickX, joystickY, endX, endY, moveDuration);
-
-  updateLastAction();
 }
 
 /**
