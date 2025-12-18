@@ -24,15 +24,14 @@ function findMarkerByColor(log) {
   if (!img) return null;
 
   // ROI (same as Python example)
-  var x1 = 467,
-    y1 = 513,
-    x2 = 810,
-    y2 = 643;
+  var x1 = 472,
+    y1 = 500,
+    x2 = 811,
+    y2 = 645;
 
   // Marker color (#FCD9FB example converted to RGB tolerance)
-  var color = "#FCD9FB";
-  var threshold = 20;
-
+  var color = "#f8c6fb";
+  var threshold = 10;
   var point = images.findColor(img, color, {
     region: [x1, y1, x2 - x1, y2 - y1],
     threshold: threshold,
@@ -96,10 +95,7 @@ function autoExplore(config, log, updateLastAction) {
     var jx2 = jx + nx * explore.swipeDistance;
     var jy2 = jy + ny * explore.swipeDistance;
 
-    var duration = randomRange(
-      config.exploreMoveDuration[0],
-      config.exploreMoveDuration[1]
-    );
+    var duration = 2000;
 
     log.info(
       "Step " +
@@ -110,8 +106,6 @@ function autoExplore(config, log, updateLastAction) {
         Math.round(dy)
     );
 
-    // 4️⃣ Move
-    press(jx, jy, 100);
     swipe(jx, jy, jx2, jy2, duration);
 
     updateLastAction();
