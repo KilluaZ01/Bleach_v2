@@ -140,7 +140,7 @@ function navigatePlayStore(logger, gamePkgName, updateLastAction) {
 function waitForInstall(logger) {
   logger.info("Waiting for installation");
 
-  var timeout = Date.now() + 10 * 80000; // 10 min max
+  var timeout = Date.now() + 10 * 100000; // ~
 
   while (true) {
     logger.info("Checking for open button...");
