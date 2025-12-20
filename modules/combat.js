@@ -8,7 +8,7 @@
 
 var detection = require("./detection.js");
 var imageExists = detection.imageExists;
-var findAndClick = detection.findImageAndClick;
+var findImageAndClick = detection.findImageAndClick;
 var humanization = require("./humanization.js");
 var randomSleep = humanization.randomSleep;
 
@@ -20,43 +20,55 @@ var randomSleep = humanization.randomSleep;
  * @param {Object} log
  * @returns {Object|null} {x, y} or null
  */
-function findCombatMarker(roi, lower, upper, log) {
-  var screen = captureScreen();
-  if (!screen) return null;
+function findCombatMarker(log) {
+  var img = captureScreen();
+  if (!img) return null;
 
-  try {
-    var x1 = roi[0],
-      y1 = roi[1],
-      x2 = roi[2],
-      y2 = roi[3];
+  // ROI (same as Python example)
+  var x1 = 1037,
+    y1 = 25,
+    x2 = 1057,
+    y2 = 46;
 
-    var w = x2 - x1;
-    var h = y2 - y1;
+  // Marker color (#FCD9FB example converted to RGB tolerance)
+  var color = "#4b4a4b";
+  var color2 = "#f9f8f9";
+  var threshold = 10;
 
-    var cropped = images.clip(screen, x1, y1, w, h);
-    var hsv = images.cvtColor(cropped, "BGR2HSV");
+  var point = images.findColor(img, color, {
+    region: [x1, y1, x2 - x1, y2 - y1],
+    threshold: threshold,
+  });
 
-    var mask = images.inRange(
-      hsv,
-      colors.hsv(lower[0], lower[1], lower[2]),
-      colors.hsv(upper[0], upper[1], upper[2])
+  var point2 = images.findColor(img, color2, {
+    region: [x1, y1, x2 - x1, y2 - y1],
+    threshold: threshold,
+  });
+
+  img.recycle();
+
+  if (point || point2) {
+    log.info(
+      "Marker found at (" +
+        (point ? point.x : point2.x) +
+        ", " +
+        (point ? point.y : point2.y) +
+        ")"
     );
-
-    var points = images.findNonZero(mask);
-
-    if (points && points.length > 0) {
-      var p = points[0]; // first detected pixel
-      return {
-        x: p.x + x1,
-        y: p.y + y1,
-      };
-    }
-  } catch (e) {
-    log.warning("Combat marker detection failed: " + e.message);
-  } finally {
-    screen.recycle();
+    toast(
+      "Marker found at (" +
+        (point ? point.x : point2.x) +
+        ", " +
+        (point ? point.y : point2.y) +
+        ")"
+    );
+    return {
+      x: point ? point.x : point2.x,
+      y: point ? point.y : point2.y,
+    };
   }
 
+  log.warning("Marker not found");
   return null;
 }
 
@@ -70,7 +82,7 @@ function enableAutoBattle(config, log, updateLastAction) {
   if (!config.autoCombat) return;
 
   // Check if auto is already on
-  if (imageExists("icon_auto_battle_on.png", config, log)) {
+  if (imageExists("icon_auto_battle_on.png", log)) {
     log.info("Auto-battle already enabled");
     return;
   }
@@ -96,29 +108,24 @@ function combatRotation(config, log, updateLastAction) {
   log.info("Starting state-driven combat...");
 
   var loops = 0;
-  var maxLoops = config.combatMaxLoops || 25;
+  var maxLoops = config.combatMaxLoops || 100;
+
+  toast("Searching Flash Step");
+  if (
+    imageExists("flash_step_text.png", log) ||
+    imageExists("dodge_text.png", log)
+  ) {
+    click(1068, 538);
+    randomSleep(1500);
+    click(1068, 538);
+    randomSleep(1500);
+  }
 
   while (loops < maxLoops) {
-    var marker = findMarkerByColor(log);
-    var clock = findCombatMarker(
-      [1035, 25, 1058, 47],
-      [0, 0, 220],
-      [179, 20, 255],
-      log
-    );
-
-    var clockDimmed = findCombatMarker(
-      [1035, 25, 1058, 47],
-      [0, 0, 50],
-      [179, 30, 120],
-      log
-    );
-
-    // 🛑 Exit condition
-    if (marker) {
-      log.success("Combat ended (marker found)");
-      break;
-    }
+    var clock = findCombatMarker(log);
+    var clockDimmed = findCombatMarker(log);
+    var canAttack = imageExists("bassic_attk.png", log);
+    var canDodge = imageExists("dodge_text.png", log);
 
     if (!clock && !clockDimmed) {
       log.info("Clock not found (normal or dimmed), exiting loop");
@@ -134,20 +141,24 @@ function combatRotation(config, log, updateLastAction) {
     click(944, 493); // Special attack
     randomSleep(2000);
 
-    click(946, 632); // Dodge
-    randomSleep(1000);
-    click(946, 632); // Dodge
-    randomSleep(1000);
+    if (canDodge) {
+      click(946, 632); // Dodge
+      randomSleep(1000);
+      click(946, 632); // Dodge
+      randomSleep(1000);
+    }
     click(1045, 406); // Ultimate Attack
-    randomSleep(4500);
+    randomSleep(2000);
 
-    // Basic attack
-    if (canAttack) {
-      findAndClick("btn_attack.png", 600, config, log, updateLastAction);
-      randomSleep(200, 350);
-    } else {
-      // Small idle wait if attack not available
-      randomSleep(150, 250);
+    for (var i = 0; i < 15; i++) {
+      // Basic attack
+      if (canAttack || clock) {
+        click(1068, 538); // Basic Attack
+        randomSleep(500);
+        i++;
+      } else {
+        break;
+      }
     }
 
     updateLastAction();

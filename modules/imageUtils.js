@@ -105,6 +105,7 @@ function preloadImages(log) {
     "play_install_button.png",
     "play_okay_button.png",
     "close_button.png",
+    "skip_button.png",
     // "btn_start.png",
     // "btn_skip.png",
     // "btn_confirm.png",

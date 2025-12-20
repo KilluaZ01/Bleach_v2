@@ -19,18 +19,16 @@ var explore = config.EXPLORE;
  * Find marker by color in ROI
  * @returns {Object|null} { x, y } or null
  */
-function findMarkerByColor(log) {
+function findMarkerByColor(roi, color, log) {
   var img = captureScreen();
   if (!img) return null;
 
   // ROI (same as Python example)
-  var x1 = 472,
-    y1 = 500,
-    x2 = 811,
-    y2 = 645;
+  var x1 = roi[0],
+    y1 = roi[1],
+    x2 = roi[2],
+    y2 = roi[3];
 
-  // Marker color (#FCD9FB example converted to RGB tolerance)
-  var color = "#f8c6fb";
   var threshold = 10;
   var point = images.findColor(img, color, {
     region: [x1, y1, x2 - x1, y2 - y1],
@@ -69,7 +67,9 @@ function autoExplore(config, log, updateLastAction) {
 
   while (steps < explore.maxSteps) {
     // Re-detect marker every loop
-    var marker = findMarkerByColor(log);
+    roi = [472, 500, 811, 645];
+    color_Marker = "#f8c6fb";
+    var marker = findMarkerByColor(roi, color_Marker, log);
     if (!marker) {
       log.warning("Marker lost, stopping movement");
       break;
@@ -119,6 +119,20 @@ function autoExplore(config, log, updateLastAction) {
   }
 }
 
+function tapToTrack(config, log, updateLastAction) {
+  log.info("Attempting to find and tap tracking marker...");
+  var roi = [66, 288, 169, 314];
+  var color_tracker = "#ff8fb8";
+  var point = findMarkerByColor(roi, color_tracker, log);
+
+  if (point) {
+    click(point.x, point.y);
+    updateLastAction();
+    log.success("Tapped tracking marker at (" + point.x + ", " + point.y + ")");
+    return { x: point.x, y: point.y };
+  }
+}
+
 /**
  * Collect resources if found on screen
  * @param {Object} config - Bot configuration
@@ -146,4 +160,5 @@ function collectResources(config, log, updateLastAction) {
 module.exports = {
   autoExplore: autoExplore,
   collectResources: collectResources,
+  tapToTrack: tapToTrack,
 };

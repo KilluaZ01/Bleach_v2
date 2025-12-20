@@ -58,6 +58,7 @@ module.exports.startBot = function (userConfig, logger, storage) {
   const {
     autoExplore,
     collectResources,
+    tapToTrack,
   } = require("../AutoXBot/modules/exploration.js");
   const {
     enableAutoBattle,
@@ -173,12 +174,9 @@ module.exports.startBot = function (userConfig, logger, storage) {
         // Priority 6: Exploration
         if (CONFIG.autoExplore) {
           autoExplore(CONFIG, log, updateLastAction);
-          randomSleep(
-            randomRange(
-              CONFIG.explorePauseDuration[0],
-              CONFIG.explorePauseDuration[1]
-            )
-          );
+          randomSleep(2000);
+          tapToTrack(CONFIG, log, updateLastAction);
+          randomSleep(2000);
         }
 
         if (shouldStop()) break;

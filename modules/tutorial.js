@@ -7,7 +7,7 @@
  */
 
 var detection = require("./detection");
-var findAndClick = detection.findImageAndClick;
+var findImageAndClick = detection.findImageAndClick;
 var imageExists = detection.imageExists;
 var humanization = require("./humanization");
 var randomSleep = humanization.randomSleep;
@@ -25,43 +25,57 @@ function runTutorialSkip(config, log, updateLastAction, shouldStop) {
 
   log.info("Running tutorial skip...");
   var attempts = 0;
-  var maxAttempts = 30; // Max attempts before giving up
+  var maxAttempts = 15; // Max attempts before giving up
 
   while (attempts < maxAttempts && !shouldStop()) {
     // Try clicking skip button
-    if (findAndClick("skip_button.png", 2000, config, log, updateLastAction)) {
-      log.success("Clicked SKIP button");
-      randomSleep(1500);
-      attempts = 0;
-      continue;
+    if (imageExists("skip_button.png", log)) {
+      toast("Skip button detected");
+      if (findImageAndClick("skip_button.png", log)) {
+        log.success("Clicked SKIP button");
+        randomSleep(1500);
+        click(870, 533);
+        randomSleep(2500);
+        continue;
+      }
     }
-
-    // Try clicking confirm/ok buttons
-    if (findAndClick("skip_confirm.png", 2000, config, log, updateLastAction)) {
-      log.success("Clicked CONFIRM/OK button");
-      randomSleep(1500);
-      attempts = 0;
-      continue;
-    }
-
-    // Spam tap center screen (common tutorial progression)
-    var centerX = device.width / 2;
-    var centerY = device.height / 2;
-    randomTap(centerX, centerY, config, log, updateLastAction);
 
     attempts++;
     randomSleep(1000);
 
     // Check if tutorial is complete (no more skip buttons)
-    if (attempts > 10 && !imageExists("skip_button.png", config, log)) {
+    if (attempts > 3 && !imageExists("skip_button.png", log)) {
       log.success("Tutorial skip complete!");
       break;
     }
   }
 
   log.info("Tutorial skip phase ended");
+  updateLastAction();
+}
+
+function handleDimmedTutorial(config, log, updateLastAction, shouldStop) {
+  var img = captureScreen();
+  if (!img) return false;
+
+  if (!isScreenDimmed(img)) {
+    img.recycle();
+    return false;
+  }
+
+  // Try highlight detection
+  var target = images.findColor(img, "#ffffff", {
+    threshold: 40,
+  });
+
+  if (target) {
+    click(target.x, target.y);
+    img.recycle();
+    return true;
+  }
 }
 
 module.exports = {
   runTutorialSkip: runTutorialSkip,
+  handleDimmedTutorial: handleDimmedTutorial,
 };

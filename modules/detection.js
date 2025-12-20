@@ -60,7 +60,6 @@ function findImageAny(imageName, log) {
 
   if (point) {
     log.success("✅ Image found at: (" + point.x + ", " + point.y + ")");
-    toast("Image found at: (" + point.x + ", " + point.y + ")");
     return { found: true, x: point.x, y: point.y };
   } else {
     toast("Image NOT found: " + imageName);
@@ -90,7 +89,6 @@ function findImageAndClick(imageName, log) {
 
   if (point) {
     log.success("✅ Image found at: (" + point.x + ", " + point.y + ")");
-    toast("Image found at: (" + point.x + ", " + point.y + ")");
     click(point.x, point.y);
     return { found: true, x: point.x, y: point.y };
   } else {
