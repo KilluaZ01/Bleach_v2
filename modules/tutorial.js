@@ -54,28 +54,99 @@ function runTutorialSkip(config, log, updateLastAction, shouldStop) {
   updateLastAction();
 }
 
-function handleDimmedTutorial(config, log, updateLastAction, shouldStop) {
+function findMarkerByColor(roi, color, log) {
   var img = captureScreen();
-  if (!img) return false;
+  if (!img) return null;
 
-  if (!isScreenDimmed(img)) {
-    img.recycle();
-    return false;
-  }
+  // ROI (same as Python example)
+  var x1 = roi[0],
+    y1 = roi[1],
+    x2 = roi[2],
+    y2 = roi[3];
 
-  // Try highlight detection
-  var target = images.findColor(img, "#ffffff", {
-    threshold: 40,
+  var threshold = 10;
+  var point = images.findColor(img, color, {
+    region: [x1, y1, x2 - x1, y2 - y1],
+    threshold: threshold,
   });
 
-  if (target) {
-    click(target.x, target.y);
-    img.recycle();
-    return true;
+  img.recycle();
+
+  if (point) {
+    log.info("Marker found at (" + point.x + ", " + point.y + ")");
+    return { x: point.x, y: point.y };
   }
+
+  log.warning("Marker not found");
+  return null;
+}
+
+function handleNextBattle(config, log, updateLastAction) {
+  if (
+    imageExists("battle_icon.png", log) &&
+    findMarkerByColor([900, 575, 950, 580], "#d5d5d4", log)
+  ) {
+    log.info("Next battle detected, clicking...");
+    click(1205, 642);
+    randomSleep(6000);
+    click(660, 460);
+    randomSleep(5000);
+    click(1052, 673);
+    randomSleep(6000);
+    click(1130, 670);
+    randomSleep(28000);
+  }
+
+  updateLastAction();
+}
+
+function handleCharPrompt(config, log, updateLastAction) {
+  if (imageExists("char_prompt.png", log)) {
+    while (true) {
+      if (imageExists("skip_button.png", log)) {
+        toast("Skip Button Found! Stopping Clicks...");
+        break;
+      }
+      click(640, 500);
+      randomSleep(500);
+    }
+  }
+  updateLastAction();
+}
+
+function handleChatPrompts(config, log, updateLastAction) {
+  if (imageExists("chat_prompt.png", log)) {
+    click(798, 363);
+    randomSleep(4000);
+    click(1180, 52);
+    randomSleep(4000);
+    click(798, 363);
+    randomSleep(7000);
+    swipe(645, 290, 645, 320, 2800);
+    randomSleep(4000);
+    click(600, 1);
+    randomSleep(3000);
+    swipe(645, 290, 645, 320, 2600);
+    randomSleep(4000);
+    click(600, 1);
+    randomSleep(4000);
+    for (var i = 0; i < 5; i++) {
+      swipe_macro(adb_address, 645, 290, 645, 320, 1800);
+      time.sleep(3);
+
+      tap_macro(adb_address, 600, 1);
+      time.sleep(4);
+
+      if (imageExists("skip_button.png", log)) {
+        break
+      }
+    }
+  }
+  updateLastAction();
 }
 
 module.exports = {
   runTutorialSkip: runTutorialSkip,
-  handleDimmedTutorial: handleDimmedTutorial,
+  handleNextBattle: handleNextBattle,
+  handleCharPrompt: handleCharPrompt,
 };

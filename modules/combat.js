@@ -20,6 +20,34 @@ var randomSleep = humanization.randomSleep;
  * @param {Object} log
  * @returns {Object|null} {x, y} or null
  */
+
+function findMarkerByColor(roi, color, log) {
+  var img = captureScreen();
+  if (!img) return null;
+
+  // ROI (same as Python example)
+  var x1 = roi[0],
+    y1 = roi[1],
+    x2 = roi[2],
+    y2 = roi[3];
+
+  var threshold = 10;
+  var point = images.findColor(img, color, {
+    region: [x1, y1, x2 - x1, y2 - y1],
+    threshold: threshold,
+  });
+
+  img.recycle();
+
+  if (point) {
+    log.info("Marker found at (" + point.x + ", " + point.y + ")");
+    return { x: point.x, y: point.y };
+  }
+
+  log.warning("Marker not found");
+  return null;
+}
+
 function findCombatMarker(log) {
   var img = captureScreen();
   if (!img) return null;
@@ -102,6 +130,24 @@ function enableAutoBattle(config, log, updateLastAction) {
   }
 }
 
+function checkHealthBar(log, updateLastAction) {
+  roi = [400, 29, 420, 41];
+  color1 = "#eaebeb";
+  color2 = "#a0a1a1";
+  color3 = "#464647";
+
+  testColor1 = findMarkerByColor(roi, color1, log);
+  testColor2 = findMarkerByColor(roi, color2, log);
+  testColor3 = findMarkerByColor(roi, color3, log);
+
+  if (testColor1 || testColor2 || testColor3) {
+    log.info("Health Bar detected!");
+    return true;
+  } else {
+    return false;
+  }
+}
+
 function combatRotation(config, log, updateLastAction) {
   if (!config.autoCombat) return;
 
@@ -124,8 +170,8 @@ function combatRotation(config, log, updateLastAction) {
   while (loops < maxLoops) {
     var clock = findCombatMarker(log);
     var clockDimmed = findCombatMarker(log);
-    var canAttack = imageExists("bassic_attk.png", log);
     var canDodge = imageExists("dodge_text.png", log);
+    var healthBarDetected = checkHealthBar(log, updateLastAction);
 
     if (!clock && !clockDimmed) {
       log.info("Clock not found (normal or dimmed), exiting loop");
@@ -138,21 +184,28 @@ function combatRotation(config, log, updateLastAction) {
     click(1068, 538); // Basic Attack
     randomSleep(2000);
 
+    click(1068, 538); // Basic Attack
+    randomSleep(2000);
+
     click(944, 493); // Special attack
     randomSleep(2000);
 
-    if (canDodge) {
+    if (!canDodge) {
       click(946, 632); // Dodge
       randomSleep(1000);
+      click(946, 632); // Dodge
+      randomSleep(1000);
+    } else {
       click(946, 632); // Dodge
       randomSleep(1000);
     }
+
     click(1045, 406); // Ultimate Attack
     randomSleep(2000);
 
     for (var i = 0; i < 15; i++) {
       // Basic attack
-      if (canAttack || clock) {
+      if (healthBarDetected || clock) {
         click(1068, 538); // Basic Attack
         randomSleep(500);
         i++;

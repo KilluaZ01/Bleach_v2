@@ -81,6 +81,7 @@ function navigatePlayStore(logger, gamePkgName, updateLastAction) {
   } else {
     logger.warning("Search icon not found");
   }
+  randomSleep(2000);
 
   // Search input field
   logger.info("Checking for search input field...");
@@ -110,6 +111,7 @@ function navigatePlayStore(logger, gamePkgName, updateLastAction) {
   } else {
     logger.warning("Game card not found in search results");
   }
+  randomSleep(3000);
 
   // Install button
   logger.info("Checking for install button...");
@@ -147,7 +149,12 @@ function waitForInstall(logger) {
     if (imageExists("open_button.png", logger)) {
       logger.success("Game installed");
       launchApp("BLEACH: Soul Resonance");
-      sleep(70000); // Wait for initial load
+      sleep(10000); // Wait for initial load
+      if (imageExists("dont_allow.png", logger)) {
+        logger.info("Clicking Dont Allow...");
+        findImageAndClick("dont_allow.png", logger);
+        sleep(70000);
+      }
       return;
     }
 
@@ -168,6 +175,19 @@ function handleAuth(logger, updateLastAction) {
   logger.info("Checking login / guest state");
 
   logger.info("Checking for terms accept button...");
+  if (imageExists("close_button.png", logger)) {
+    logger.info("Skipping terms by clicking close button...");
+    findImageAndClick("close_button.png", logger);
+    randomSleep(7000);
+
+    click(860, 520);
+    randomSleep(5000);
+
+    click(645, 653);
+    randomSleep(40000);
+    return;
+  }
+
   click(286, 329);
   randomSleep(4000);
 

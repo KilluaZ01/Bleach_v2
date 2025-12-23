@@ -12,6 +12,8 @@
  * ==================================================================
  */
 
+const { handleCharPrompt } = require("./modules/tutorial.js");
+
 // =======================================================================
 // IMPORTS (Loaded once, no re-execution)
 // =======================================================================
@@ -53,7 +55,10 @@ module.exports.startBot = function (userConfig, logger, storage) {
     randomSleep,
     randomRange,
   } = require("../AutoXBot/modules/humanization.js");
-  const { runTutorialSkip } = require("../AutoXBot/modules/tutorial.js");
+  const {
+    runTutorialSkip,
+    handleDimmedTutorial,
+  } = require("../AutoXBot/modules/tutorial.js");
   const { claimAllRewards } = require("../AutoXBot/modules/rewards.js");
   const {
     autoExplore,
@@ -64,7 +69,10 @@ module.exports.startBot = function (userConfig, logger, storage) {
     enableAutoBattle,
     combatRotation,
   } = require("../AutoXBot/modules/combat.js");
-  const { closePopups } = require("../AutoXBot/modules/popups.js");
+  const {
+    closePopups,
+    closeRandomPopups,
+  } = require("../AutoXBot/modules/popups.js");
   const {
     checkForErrors,
     restartGame,
@@ -145,9 +153,13 @@ module.exports.startBot = function (userConfig, logger, storage) {
         // // Check stop again after slow operation
         // if (shouldStop()) break;
 
-        // // Priority 2: Close popups
-        // closePopups(CONFIG, log, updateLastAction);
-        // randomSleep(500);
+        // Priority 2: Close popups
+        closePopups(CONFIG, log, updateLastAction);
+        randomSleep(2000);
+        closeRandomPopups(CONFIG, log, updateLastAction);
+        randomSleep(2000);
+
+        if (shouldStop()) break;
 
         // // Check stop signal
         // if (shouldStop()) break;
@@ -155,6 +167,11 @@ module.exports.startBot = function (userConfig, logger, storage) {
         // Priority 3: Tutorial skip (if enabled)
         if (CONFIG.tutorialSkip) {
           runTutorialSkip(CONFIG, log, updateLastAction, shouldStop);
+          randomSleep(2000);
+          handleDimmedTutorial(CONFIG, log, updateLastAction);
+          randomSleep(2000);
+          handleCharPrompt(CONFIG, log, updateLastAction);
+          randomSleep(2000);
         }
 
         if (shouldStop()) break;
@@ -188,6 +205,8 @@ module.exports.startBot = function (userConfig, logger, storage) {
         }
 
         if (shouldStop()) break;
+
+        click(1, 1);
 
         // // Priority 8: Resource collection
         // collectResources(CONFIG, log, updateLastAction);

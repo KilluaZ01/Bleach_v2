@@ -7,7 +7,7 @@
  */
 
 var detection = require("./detection.js");
-var findAndClick = detection.findAndClick;
+var findImageAndClick = detection.findImageAndClick;
 var imageExists = detection.imageExists;
 var humanization = require("./humanization.js");
 var randomSleep = humanization.randomSleep;
@@ -22,15 +22,15 @@ function closePopups(config, log, updateLastAction) {
   log.info("Checking for popups/ads...");
 
   var closeButtons = [
-    "btn_close_x.png",
-    "btn_close_x_dark.png",
-    "btn_cancel.png",
+    "close_button.png",
+    // "btn_close_x_dark.png",
+    // "btn_cancel.png",
   ];
 
   var closed = false;
   for (var i = 0; i < closeButtons.length; i++) {
     var btn = closeButtons[i];
-    if (findAndClick(btn, 1500, config, log, updateLastAction)) {
+    if (findImageAndClick(btn, log)) {
       log.success("Closed popup with " + btn);
       closed = true;
       randomSleep(1000);
@@ -39,13 +39,27 @@ function closePopups(config, log, updateLastAction) {
   }
 
   // Try back button as fallback
-  if (!closed && imageExists("popup_background.png", config, log)) {
+  if (!closed && imageExists("close_button.png", config, log)) {
     back();
     log.info("Closed popup with back button");
     randomSleep(1000);
   }
+
+  updateLastAction();
+}
+
+function closeRandomPopups(config, log, updateLastAction) {
+  log.info("Checking for random popups...");
+
+  if (findImageAndClick("lvl_up.png", log)) {
+    log.info("Closed level up popup");
+    click(630, 550);
+    randomSleep(2000);
+  }
+  updateLastAction();
 }
 
 module.exports = {
   closePopups: closePopups,
+  closeRandomPopups: closeRandomPopups,
 };
