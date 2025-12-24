@@ -12,8 +12,6 @@
  * ==================================================================
  */
 
-const { handleCharPrompt } = require("./modules/tutorial.js");
-
 // =======================================================================
 // IMPORTS (Loaded once, no re-execution)
 // =======================================================================
@@ -57,7 +55,9 @@ module.exports.startBot = function (userConfig, logger, storage) {
   } = require("../AutoXBot/modules/humanization.js");
   const {
     runTutorialSkip,
-    handleDimmedTutorial,
+    handleNextBattle,
+    handleCharPrompt,
+    handleChatPrompts,
   } = require("../AutoXBot/modules/tutorial.js");
   const { claimAllRewards } = require("../AutoXBot/modules/rewards.js");
   const {
@@ -130,8 +130,9 @@ module.exports.startBot = function (userConfig, logger, storage) {
     log.info("Starting main bot loop...");
 
     let loopCount = 0;
+    let exitMainLoop = false; // New variable to control loop exit
 
-    while (botRunning) {
+    while (botRunning && !exitMainLoop) {
       loopCount++;
       log.info(`============ LOOP #${loopCount} ============`);
 
@@ -168,13 +169,19 @@ module.exports.startBot = function (userConfig, logger, storage) {
         if (CONFIG.tutorialSkip) {
           runTutorialSkip(CONFIG, log, updateLastAction, shouldStop);
           randomSleep(2000);
-          handleDimmedTutorial(CONFIG, log, updateLastAction);
+          handleNextBattle(CONFIG, log, updateLastAction);
           randomSleep(2000);
           handleCharPrompt(CONFIG, log, updateLastAction);
           randomSleep(2000);
+
+          // Pass a callback to handleChatPrompts to set exitMainLoop
+          handleChatPrompts(CONFIG, log, updateLastAction, () => {
+            exitMainLoop = true;
+          });
+          randomSleep(2000);
         }
 
-        if (shouldStop()) break;
+        if (shouldStop() || exitMainLoop) break;
 
         // // Priority 4: Enable auto-battle
         // enableAutoBattle(CONFIG, log, updateLastAction);
@@ -284,6 +291,12 @@ module.exports.startBot = function (userConfig, logger, storage) {
     }
   }
 
+  function claimRewardAndSummon(config, log, updateLastAction) {
+    // Claim rewards
+    claimAllRewards(config, log, updateLastAction);
+    randomSleep(2000);
+  }
+
   // =======================================================================
   // STARTUP & EXECUTION (FIXED: Proper function scope)
   // =======================================================================
@@ -292,49 +305,73 @@ module.exports.startBot = function (userConfig, logger, storage) {
    * Main execution function
    */
   function main() {
-    try {
-      // Preload images
-      preloadImages(log);
+    let validationPassed = false; // Flag to control restart logic
 
-      // Start watchdog thread
-      startWatchdog(
-        CONFIG,
-        log,
-        getLastActionTime,
-        updateLastAction,
-        isBotRunning
-      );
+    while (!validationPassed) {
+      try {
+        // Preload images
+        preloadImages(log);
 
-      // Run auth loop first
-      authLoop();
+        // Start watchdog thread
+        startWatchdog(
+          CONFIG,
+          log,
+          getLastActionTime,
+          updateLastAction,
+          isBotRunning
+        );
 
-      // Check if we should continue
-      if (shouldStop()) {
-        log.warning("Stop signal received during auth");
+        // Run auth loop first
+        authLoop();
+
+        // Check if we should continue
+        if (shouldStop()) {
+          log.warning("Stop signal received during auth");
+          cleanup();
+          return;
+        }
+
+        // Wait for game to be ready
+        log.info("Waiting 5 seconds for game to be ready...");
+        randomSleep(5000);
+
+        if (shouldStop()) {
+          log.warning("Stop signal received before main loop");
+          cleanup();
+          return;
+        }
+
+        // Start main loop
+        mainLoop();
+
+        if (shouldStop()) {
+          log.warning(
+            "Stop signal received before Reward Claim & Summoning loop"
+          );
+          cleanup();
+          return;
+        }
+
+        // Claim rewards and summon
+        claimRewardAndSummon(CONFIG, log, updateLastAction);
+
+        // Check if the bot is in a valid state
+        if (checkIfValid(log)) {
+          log.success("Validation passed. Stopping bot gracefully.");
+          validationPassed = true; // Exit the loop
+        } else {
+          log.warning("Validation failed. Restarting main process...");
+          cleanup(); // Clean up resources before restarting
+        }
+      } catch (e) {
+        log.error(`Fatal error: ${e.message}`);
+        log.error(`Stack: ${e.stack}`);
         cleanup();
-        return;
       }
-
-      // Wait for game to be ready
-      log.info("Waiting 5 seconds for game to be ready...");
-      randomSleep(5000);
-
-      if (shouldStop()) {
-        log.warning("Stop signal received before main loop");
-        cleanup();
-        return;
-      }
-
-      // Start main loop
-      mainLoop();
-
-      // Cleanup
-      cleanup();
-    } catch (e) {
-      log.error(`Fatal error: ${e.message}`);
-      log.error(`Stack: ${e.stack}`);
-      cleanup();
     }
+
+    // Final cleanup after exiting the loop
+    cleanup();
   }
 
   /**

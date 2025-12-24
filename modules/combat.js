@@ -171,6 +171,7 @@ function combatRotation(config, log, updateLastAction) {
     var clock = findCombatMarker(log);
     var clockDimmed = findCombatMarker(log);
     var canDodge = imageExists("dodge_text.png", log);
+    var canFlash = imageExists("flash_step_text.png", log);
     var healthBarDetected = checkHealthBar(log, updateLastAction);
 
     if (!clock && !clockDimmed) {
@@ -190,7 +191,7 @@ function combatRotation(config, log, updateLastAction) {
     click(944, 493); // Special attack
     randomSleep(2000);
 
-    if (!canDodge) {
+    if (!canDodge && !canFlash) {
       click(946, 632); // Dodge
       randomSleep(1000);
       click(946, 632); // Dodge
@@ -202,6 +203,11 @@ function combatRotation(config, log, updateLastAction) {
 
     click(1045, 406); // Ultimate Attack
     randomSleep(2000);
+
+    if (!healthBarDetected) {
+      log.info("Health bar not detected, exiting loop");
+      break;
+    }
 
     for (var i = 0; i < 15; i++) {
       // Basic attack

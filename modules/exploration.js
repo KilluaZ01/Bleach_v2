@@ -71,6 +71,7 @@ function autoExplore(config, log, updateLastAction) {
     color_Marker = "#f8c6fb";
     var marker = findMarkerByColor(roi, color_Marker, log);
     if (!marker) {
+      toast("Marker lost, stopping movement");
       log.warning("Marker lost, stopping movement");
       break;
     }
@@ -95,7 +96,7 @@ function autoExplore(config, log, updateLastAction) {
     var jx2 = jx + nx * explore.swipeDistance;
     var jy2 = jy + ny * explore.swipeDistance;
 
-    var duration = 2000;
+    var duration = 3000;
 
     log.info(
       "Step " +

@@ -12,7 +12,7 @@ var humanization = require("./humanization");
 var randomSleep = humanization.randomSleep;
 
 var PLAY_STORE_PKG = "com.android.vending";
-var GAME_PKG_NAME = "com.bleach.apj";
+var GAME_PKG_NAME = ["com.bleach.apj", "com.bladetw.bd"];
 
 /**
  * Uninstall game (if exists), open Play Store,
@@ -29,26 +29,28 @@ function downloadGame(logger, gamePkgName, updateLastAction) {
   logger.info("Preparing fresh game install");
 
   // 1. Uninstall if already installed
-  if (app.getAppName(gamePkgName)) {
-    logger.info("Game already installed, uninstalling...");
-    app.uninstall(gamePkgName);
-    randomSleep(2000, 2500);
+  for (var i = 0; i < gamePkgName.length; i++) {
+    if (app.getAppName(gamePkgName[i])) {
+      logger.info("Game already installed, uninstalling...");
+      app.uninstall(gamePkgName[i]);
+      randomSleep(2000, 2500);
 
-    click(583, 770);
-    randomSleep(2000); // Okay for uninstall
+      click(583, 770);
+      randomSleep(2000); // Okay for uninstall
 
-    // Wait until uninstall completes
-    var timeout = Date.now() + 60000;
-    while (app.getAppName(gamePkgName)) {
-      randomSleep(1000, 1500);
-      if (Date.now() > timeout) {
-        throw new Error("Uninstall timeout");
+      // Wait until uninstall completes
+      var timeout = Date.now() + 60000;
+      while (app.getAppName(gamePkgName[i])) {
+        randomSleep(1000, 1500);
+        if (Date.now() > timeout) {
+          throw new Error("Uninstall timeout");
+        }
       }
+      logger.success("Uninstall complete");
     }
-    logger.success("Uninstall complete");
-  }
 
-  randomSleep(1500, 2500);
+    randomSleep(1500, 2500);
+  }
 
   // 2. Launch Play Store
   logger.info("Opening Play Store");
@@ -149,7 +151,7 @@ function waitForInstall(logger) {
     if (imageExists("open_button.png", logger)) {
       logger.success("Game installed");
       launchApp("BLEACH: Soul Resonance");
-      sleep(10000); // Wait for initial load
+      sleep(20000); // Wait for initial load
       if (imageExists("dont_allow.png", logger)) {
         logger.info("Clicking Dont Allow...");
         findImageAndClick("dont_allow.png", logger);
@@ -198,10 +200,10 @@ function handleAuth(logger, updateLastAction) {
   randomSleep(10000);
 
   click(640, 530);
-  randomSleep(820000);
+  randomSleep(10000);
 
   logger.info("Checking close button...");
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < 50; i++) {
     if (imageExists("close_button.png", logger)) {
       logger.info("Close button found, clicking...");
       findImageAndClick("close_button.png", logger);

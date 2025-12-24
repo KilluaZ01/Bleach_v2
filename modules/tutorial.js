@@ -29,9 +29,21 @@ function runTutorialSkip(config, log, updateLastAction, shouldStop) {
 
   while (attempts < maxAttempts && !shouldStop()) {
     // Try clicking skip button
-    if (imageExists("skip_button.png", log)) {
+    if (
+      imageExists("skip_button.png", log) ||
+      imageExists("skip_another.png", log)
+    ) {
       toast("Skip button detected");
-      if (findImageAndClick("skip_button.png", log)) {
+      if (
+        findImageAndClick("skip_button.png", log) ||
+        findImageAndClick("skip_another.png", log)
+      ) {
+        log.success("Clicked SKIP button");
+        randomSleep(1500);
+        click(870, 533);
+        randomSleep(2500);
+        continue;
+      } else if (findImageAndClick("skip_another.png", log)) {
         log.success("Clicked SKIP button");
         randomSleep(1500);
         click(870, 533);
@@ -114,33 +126,84 @@ function handleCharPrompt(config, log, updateLastAction) {
   updateLastAction();
 }
 
-function handleChatPrompts(config, log, updateLastAction) {
-  if (imageExists("chat_prompt.png", log)) {
-    click(798, 363);
-    randomSleep(4000);
-    click(1180, 52);
-    randomSleep(4000);
-    click(798, 363);
-    randomSleep(7000);
-    swipe(645, 290, 645, 320, 2800);
-    randomSleep(4000);
-    click(600, 1);
-    randomSleep(3000);
-    swipe(645, 290, 645, 320, 2600);
-    randomSleep(4000);
-    click(600, 1);
-    randomSleep(4000);
-    for (var i = 0; i < 5; i++) {
-      swipe_macro(adb_address, 645, 290, 645, 320, 1800);
-      time.sleep(3);
+function runSenseTest(config, log, updateLastAction) {
+  log.info("Starting sense test...");
 
-      tap_macro(adb_address, 600, 1);
-      time.sleep(4);
+  // Swipe coordinates (adjust once per game)
+  var x1 = 645;
+  var y1 = 290;
+  var x2 = 645;
+  var y2 = 320;
 
-      if (imageExists("skip_button.png", log)) {
-        break
+  // Progressive swipe durations (ms)
+  var durations = [1800, 2200, 2600, 3000, 3500];
+
+  var maxRounds = 10; // safety
+  var round = 0;
+
+  while (round < maxRounds) {
+    for (var i = 0; i < durations.length; i++) {
+      var duration = durations[i];
+
+      log.info(
+        "Sense swipe attempt: round " + (round + 1) + ", duration=" + duration
+      );
+
+      swipe(x1, y1, x2, y2, duration);
+      updateLastAction();
+
+      randomSleep(1200); // allow animation
+
+      // ✅ Final success check
+      if (imageExists("third_sense.png", config, log)) {
+        log.success("Sense test PASSED");
+        return true;
       }
     }
+
+    round++;
+  }
+
+  log.warning("Sense test FAILED after retries");
+  return false;
+}
+
+function handleChatPrompts(config, log, updateLastAction, setExitMainLoop) {
+  if (imageExists("another_chat.png", log)) {
+    click(798, 363); // Talk to NPC
+    randomSleep(4000);
+    click(1180, 52); // Skip
+    randomSleep(4000);
+    click(977, 431); // Talk Again
+    randomSleep(7000);
+
+    runSenseTest(config, log, updateLastAction);
+
+    while (true) {
+      if (
+        imageExists("skip_button.png", log) ||
+        imageExists("skip_another.png", log)
+      ) {
+        toast("Skip Button Found! Stopping Clicks...");
+        break;
+      }
+      click(1, 1);
+      randomSleep(500);
+      click(1, 1);
+      randomSleep(500);
+      click(1, 1);
+      randomSleep(500);
+    }
+
+    click(1180, 52); // Skip
+    randomSleep(3000);
+    click(879, 533); // Skip Confirm
+    randomSleep(3000);
+    click(1, 1);
+    randomSleep(4000);
+
+    // Signal to exit the main loop
+    setExitMainLoop();
   }
   updateLastAction();
 }
@@ -149,4 +212,5 @@ module.exports = {
   runTutorialSkip: runTutorialSkip,
   handleNextBattle: handleNextBattle,
   handleCharPrompt: handleCharPrompt,
+  handleChatPrompts: handleChatPrompts,
 };

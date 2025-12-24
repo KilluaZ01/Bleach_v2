@@ -7,9 +7,36 @@
  */
 
 var detection = require("./detection.js");
-var findAndClick = detection.findAndClick;
+var findAndClick = detection.findImageAndClick;
 var humanization = require("./humanization.js");
 var randomSleep = humanization.randomSleep;
+
+function findMarkerByColor(roi, color, log) {
+  var img = captureScreen();
+  if (!img) return null;
+
+  // ROI (same as Python example)
+  var x1 = roi[0],
+    y1 = roi[1],
+    x2 = roi[2],
+    y2 = roi[3];
+
+  var threshold = 10;
+  var point = images.findColor(img, color, {
+    region: [x1, y1, x2 - x1, y2 - y1],
+    threshold: threshold,
+  });
+
+  img.recycle();
+
+  if (point) {
+    log.info("Marker found at (" + point.x + ", " + point.y + ")");
+    return { x: point.x, y: point.y };
+  }
+
+  log.warning("Marker not found");
+  return null;
+}
 
 /**
  * Claim mail rewards
@@ -21,82 +48,222 @@ function claimMailRewards(config, log, updateLastAction) {
   if (!config.claimMail) return;
 
   log.info("Checking mail rewards...");
+  click(170, 588);
+  randomSleep(8000);
+  click(133, 650);
+  randomSleep(10000);
+  click(645, 622);
+  randomSleep(7000);
+  click(645, 670);
+  randomSleep(6000);
+  click(54, 35);
+  randomSleep(6000);
+  click(196, 583);
+  randomSleep(8000);
+  click(327, 661);
+  randomSleep(6000);
+  click(645, 541);
+  randomSleep(8000);
+  click(54, 35);
+  randomSleep(6000);
+  click(1196, 93);
+  randomSleep(4000);
+  click(1193, 77);
+  randomSleep(4000);
+}
 
-  // Find and click mail icon
-  if (
-    findAndClick("icon_mail.png", 3000, config, log, updateLastAction) ||
-    findAndClick("icon_mail_notify.png", 3000, config, log, updateLastAction)
-  ) {
-    randomSleep(2000, 500);
+function drawTillNext(log) {
+  for (var i = 0; i < 20; i++) {
+    log("Draw attempt #" + (i + 1));
 
-    // Try to claim all
-    if (
-      findAndClick("btn_claim_all.png", 3000, config, log, updateLastAction)
-    ) {
-      log.success("Claimed all mail rewards!");
-      randomSleep(1500);
-
-      // Confirm if needed
-      findAndClick("btn_confirm.png", 2000, config, log, updateLastAction);
-      randomSleep(1000);
-    } else {
-      // Try individual claim buttons
-      var claimed = 0;
-      for (var i = 0; i < 5; i++) {
-        if (
-          findAndClick("btn_claim.png", 1500, config, log, updateLastAction)
-        ) {
-          claimed++;
-          randomSleep(1000);
-        }
-      }
-      if (claimed > 0) {
-        log.success("Claimed " + claimed + " mail rewards individually");
-      }
+    // 1️⃣ Skip gacha animation
+    if (imageExists("skip_gatcha.png", log)) {
+      log("Skip detected");
+      click(1180, 52);
+      sleep(2000);
+      continue;
     }
 
-    // Close mail screen
-    back();
-    randomSleep(1000);
-  } else {
-    log.info("No mail icon found");
+    // 2️⃣ Normal flow
+    click(640, 664); // Tap to close
+    sleep(3000);
+
+    click(1146, 658); // 10x pull
+    sleep(3000);
+
+    // 3️⃣ Token required popup
+    if (imageExists("close_button.png", log)) {
+      log("Close token required popup");
+      click(978, 203);
+      sleep(3000);
+      return true;
+    }
+
+    // 4️⃣ Rating popup
+    if (imageExists("rating.png", 0.8)) {
+      log("Rating popup detected");
+      click(861, 64);
+      sleep(2000);
+    }
   }
+
+  return false;
+}
+
+function draw10xTill1x(log) {
+  for (var i = 0; i < 20; i++) {
+    log("Draw loop #" + (i + 1));
+
+    // 1️⃣ Skip animation
+    if (imageExists("skip_gatcha.png", log)) {
+      log("Skipping animation...");
+      click(1180, 52);
+      sleep(2000);
+      continue;
+    }
+
+    // 2️⃣ Close animation
+    log("Closing animation...");
+    click(640, 664);
+    sleep(3000);
+
+    // 3️⃣ Another 10x pull
+    log("Another 10x pull...");
+    click(1146, 658);
+    sleep(3000);
+
+    // 4️⃣ Popup handling
+    if (imageExists("close_button.png", log)) {
+      // Token required
+      if (imageExists("token_require.png", log)) {
+        log("Token required — stopping");
+        click(978, 203);
+        sleep(3000);
+        return true;
+      }
+
+      // Rating popup
+      if (imageExists("rating.png", log)) {
+        log("Rating popup");
+        click(861, 64);
+        sleep(2000);
+
+        log("Closing screen");
+        click(640, 664);
+        sleep(3000);
+      }
+
+      // Confirm
+      log("Confirming...");
+      click(868, 512);
+      sleep(3000);
+
+      // Top-up detected
+      if (imageExists("top_up.png", log)) {
+        log("Top-up screen — returning");
+        click(54, 35);
+        sleep(2000);
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function draw1xTill0(log) {
+  // Initial 1x pull
+  click(845, 657);
+  sleep(3000);
+
+  for (var i = 0; i < 20; i++) {
+    log("1x draw loop #" + (i + 1));
+
+    // 1️⃣ Skip animation
+    if (imageExists("skip_gatcha.png", log)) {
+      log("Skipping animation");
+      click(1180, 52);
+      sleep(2000);
+      continue;
+    }
+
+    // 2️⃣ Close animation
+    click(640, 664);
+    sleep(3000);
+
+    // 3️⃣ Another 1x pull
+    click(845, 657);
+    sleep(3000);
+
+    // 4️⃣ Confirm & check top-up
+    if (imageExists("close_button.png", log)) {
+      log("Confirm popup");
+      click(868, 512);
+      sleep(3000);
+
+      if (imageExists("top_up.png", log)) {
+        log("Top-up detected — stopping");
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 /**
- * Claim daily/login rewards
+ * Summoning logic
  * @param {Object} config - Bot configuration
  * @param {Object} log - Logger object
  * @param {Function} updateLastAction - Callback to update last action time
  */
-function claimDailyRewards(config, log, updateLastAction) {
-  if (!config.claimDaily) return;
+function summoningLogic(config, log, updateLastAction) {
+  log.info("Summoning Characters...");
 
-  log.info("Checking daily rewards...");
+  click(889, 651); // Gatcha Button
+  randomSleep(8000);
 
-  // Find and click gift/event icons
-  var icons = ["icon_gift.png", "icon_event.png"];
+  click(1146, 658); // 10x Summon
+  randomSleep(4000);
 
-  for (var i = 0; i < icons.length; i++) {
-    var icon = icons[i];
-    if (findAndClick(icon, 3000, config, log, updateLastAction)) {
-      randomSleep(2000, 500);
+  drawTillNext(log);
+  randomSleep(2000);
 
-      // Try to claim
-      if (
-        findAndClick("btn_claim.png", 3000, config, log, updateLastAction) ||
-        findAndClick("btn_claim_all.png", 3000, config, log, updateLastAction)
-      ) {
-        log.success("Claimed from " + icon);
-        randomSleep(1500);
-        findAndClick("btn_confirm.png", 2000, config, log, updateLastAction);
-        randomSleep(1000);
-      }
+  click(110, 293); // Another Banner
+  randomSleep(6000);
 
-      // Close screen
-      back();
-      randomSleep(1000);
-    }
+  click(1146, 658); // 10x Summon
+  randomSleep(4000);
+
+  draw10xTill1x(log);
+  randomSleep(2000);
+
+  draw1xTill0(log);
+  randomSleep(2000);
+
+  click(54, 35); // Close Gatcha
+  randomSleep(6000);
+
+  click(54, 35); // Close Gatcha
+  randomSleep(6000);
+
+  log.info("Summoning cycle complete");
+}
+
+function checkIfValid(log) {
+  // Valid Accounts Checking
+  click(1092, 645);
+  randomSleep(8000);
+
+  if (
+    findMarkerByColor([160, 158, 170, 161], "#fee761", log) &&
+    findMarkerByColor([260, 158, 270, 161], "#fee761", log)
+  ) {
+    log.success("Valid account detected, Stopping Bot");
+    return true;
+  } else {
+    log.error("Invalid account detected, Retrying Loop From Start...");
+    return false;
   }
 }
 
@@ -109,12 +276,16 @@ function claimDailyRewards(config, log, updateLastAction) {
 function claimAllRewards(config, log, updateLastAction) {
   log.info("Starting reward claim cycle...");
   claimMailRewards(config, log, updateLastAction);
-  claimDailyRewards(config, log, updateLastAction);
+  log.info("Mail rewards claimed");
+  randomSleep(2000);
+  log.info("Proceeding to summoning logic...");
+  summoningLogic(config, log, updateLastAction);
   log.info("Reward claim cycle complete");
 }
 
 module.exports = {
-  claimMailRewards: claimMailRewards,
-  claimDailyRewards: claimDailyRewards,
   claimAllRewards: claimAllRewards,
+  claimMailRewards: claimMailRewards,
+  summoningLogic: summoningLogic,
+  checkIfValid: checkIfValid,
 };
