@@ -291,9 +291,9 @@ module.exports.startBot = function (userConfig, logger, storage) {
     }
   }
 
-  function claimRewardAndSummon(config, log, updateLastAction) {
+  function claimRewardAndSummon() {
     // Claim rewards
-    claimAllRewards(config, log, updateLastAction);
+    claimAllRewards(CONFIG, log, updateLastAction);
     randomSleep(2000);
   }
 
@@ -353,10 +353,10 @@ module.exports.startBot = function (userConfig, logger, storage) {
         }
 
         // Claim rewards and summon
-        claimRewardAndSummon(CONFIG, log, updateLastAction);
+        claimRewardAndSummon();
 
         // Check if the bot is in a valid state
-        if (checkIfValid(log)) {
+        if (checkIfValid(CONFIG, log, updateLastAction)) {
           log.success("Validation passed. Stopping bot gracefully.");
           validationPassed = true; // Exit the loop
         } else {

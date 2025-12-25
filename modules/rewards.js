@@ -7,6 +7,7 @@
  */
 
 var detection = require("./detection.js");
+var imageExists = detection.imageExists;
 var findAndClick = detection.findImageAndClick;
 var humanization = require("./humanization.js");
 var randomSleep = humanization.randomSleep;
@@ -48,7 +49,7 @@ function claimMailRewards(config, log, updateLastAction) {
   if (!config.claimMail) return;
 
   log.info("Checking mail rewards...");
-  click(170, 588);
+  click(170, 588); // Claim Rewards
   randomSleep(8000);
   click(133, 650);
   randomSleep(10000);
@@ -64,6 +65,8 @@ function claimMailRewards(config, log, updateLastAction) {
   randomSleep(6000);
   click(645, 541);
   randomSleep(8000);
+  click(1, 1);
+  randomSleep(4000);
   click(54, 35);
   randomSleep(6000);
   click(1196, 93);
@@ -74,11 +77,11 @@ function claimMailRewards(config, log, updateLastAction) {
 
 function drawTillNext(log) {
   for (var i = 0; i < 20; i++) {
-    log("Draw attempt #" + (i + 1));
+    log.info("Draw attempt #" + (i + 1));
 
     // 1️⃣ Skip gacha animation
     if (imageExists("skip_gatcha.png", log)) {
-      log("Skip detected");
+      log.info("Skip detected");
       click(1180, 52);
       sleep(2000);
       continue;
@@ -93,7 +96,7 @@ function drawTillNext(log) {
 
     // 3️⃣ Token required popup
     if (imageExists("close_button.png", log)) {
-      log("Close token required popup");
+      log.info("Close token required popup");
       click(978, 203);
       sleep(3000);
       return true;
@@ -101,7 +104,7 @@ function drawTillNext(log) {
 
     // 4️⃣ Rating popup
     if (imageExists("rating.png", 0.8)) {
-      log("Rating popup detected");
+      log.info("Rating popup detected");
       click(861, 64);
       sleep(2000);
     }
@@ -112,23 +115,23 @@ function drawTillNext(log) {
 
 function draw10xTill1x(log) {
   for (var i = 0; i < 20; i++) {
-    log("Draw loop #" + (i + 1));
+    log.info("Draw loop #" + (i + 1));
 
     // 1️⃣ Skip animation
     if (imageExists("skip_gatcha.png", log)) {
-      log("Skipping animation...");
+      log.info("Skipping animation...");
       click(1180, 52);
       sleep(2000);
       continue;
     }
 
     // 2️⃣ Close animation
-    log("Closing animation...");
+    log.info("Closing animation...");
     click(640, 664);
     sleep(3000);
 
     // 3️⃣ Another 10x pull
-    log("Another 10x pull...");
+    log.info("Another 10x pull...");
     click(1146, 658);
     sleep(3000);
 
@@ -136,7 +139,7 @@ function draw10xTill1x(log) {
     if (imageExists("close_button.png", log)) {
       // Token required
       if (imageExists("token_require.png", log)) {
-        log("Token required — stopping");
+        log.info("Token required — stopping");
         click(978, 203);
         sleep(3000);
         return true;
@@ -144,23 +147,23 @@ function draw10xTill1x(log) {
 
       // Rating popup
       if (imageExists("rating.png", log)) {
-        log("Rating popup");
+        log.info("Rating popup");
         click(861, 64);
         sleep(2000);
 
-        log("Closing screen");
+        log.info("Closing screen");
         click(640, 664);
         sleep(3000);
       }
 
       // Confirm
-      log("Confirming...");
+      log.info("Confirming...");
       click(868, 512);
       sleep(3000);
 
       // Top-up detected
       if (imageExists("top_up.png", log)) {
-        log("Top-up screen — returning");
+        log.info("Top-up screen — returning");
         click(54, 35);
         sleep(2000);
         return true;
@@ -177,11 +180,11 @@ function draw1xTill0(log) {
   sleep(3000);
 
   for (var i = 0; i < 20; i++) {
-    log("1x draw loop #" + (i + 1));
+    log.info("1x draw loop #" + (i + 1));
 
     // 1️⃣ Skip animation
     if (imageExists("skip_gatcha.png", log)) {
-      log("Skipping animation");
+      log.info("Skipping animation");
       click(1180, 52);
       sleep(2000);
       continue;
@@ -197,12 +200,12 @@ function draw1xTill0(log) {
 
     // 4️⃣ Confirm & check top-up
     if (imageExists("close_button.png", log)) {
-      log("Confirm popup");
+      log.info("Confirm popup");
       click(868, 512);
       sleep(3000);
 
       if (imageExists("top_up.png", log)) {
-        log("Top-up detected — stopping");
+        log.info("Top-up detected — stopping");
         return true;
       }
     }
@@ -250,7 +253,7 @@ function summoningLogic(config, log, updateLastAction) {
   log.info("Summoning cycle complete");
 }
 
-function checkIfValid(log) {
+function checkIfValid(config, log, updateLastAction) {
   // Valid Accounts Checking
   click(1092, 645);
   randomSleep(8000);

@@ -203,7 +203,7 @@ function handleAuth(logger, updateLastAction) {
   randomSleep(10000);
 
   logger.info("Checking close button...");
-  for (var i = 0; i < 50; i++) {
+  while (true) {
     if (imageExists("close_button.png", logger)) {
       logger.info("Close button found, clicking...");
       findImageAndClick("close_button.png", logger);

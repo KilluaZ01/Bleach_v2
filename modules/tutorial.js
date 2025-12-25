@@ -34,29 +34,21 @@ function runTutorialSkip(config, log, updateLastAction, shouldStop) {
       imageExists("skip_another.png", log)
     ) {
       toast("Skip button detected");
-      if (
-        findImageAndClick("skip_button.png", log) ||
-        findImageAndClick("skip_another.png", log)
-      ) {
-        log.success("Clicked SKIP button");
-        randomSleep(1500);
-        click(870, 533);
-        randomSleep(2500);
-        continue;
-      } else if (findImageAndClick("skip_another.png", log)) {
-        log.success("Clicked SKIP button");
-        randomSleep(1500);
-        click(870, 533);
-        randomSleep(2500);
-        continue;
-      }
+      click(1180, 52); // Skip button
+      randomSleep(4000);
+      click(870, 533); // Confirm skip
+      randomSleep(4000);
     }
 
     attempts++;
     randomSleep(1000);
 
     // Check if tutorial is complete (no more skip buttons)
-    if (attempts > 3 && !imageExists("skip_button.png", log)) {
+    if (
+      attempts > 3 &&
+      (!imageExists("skip_button.png", log) ||
+        !imageExists("skip_another.png", log))
+    ) {
       log.success("Tutorial skip complete!");
       break;
     }
@@ -155,7 +147,7 @@ function runSenseTest(config, log, updateLastAction) {
       randomSleep(1200); // allow animation
 
       // ✅ Final success check
-      if (imageExists("third_sense.png", config, log)) {
+      if (imageExists("third_sense.png", log)) {
         log.success("Sense test PASSED");
         return true;
       }
@@ -185,14 +177,18 @@ function handleChatPrompts(config, log, updateLastAction, setExitMainLoop) {
         imageExists("skip_another.png", log)
       ) {
         toast("Skip Button Found! Stopping Clicks...");
+        click(1180, 52); // Skip
+        randomSleep(4000);
+        click(870, 533);
+        randomSleep(4000);
         break;
       }
       click(1, 1);
-      randomSleep(500);
+      randomSleep(1000);
       click(1, 1);
-      randomSleep(500);
+      randomSleep(1000);
       click(1, 1);
-      randomSleep(500);
+      randomSleep(1000);
     }
 
     click(1180, 52); // Skip

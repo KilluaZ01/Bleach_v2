@@ -358,7 +358,7 @@ function loadSettings() {
   ui.chkAutoExplore.checked = storage.get("autoExplore", true);
   ui.chkAutoCombat.checked = storage.get("autoCombat", true);
   ui.chkSlowMode.checked = storage.get("slowMode", false);
-  ui.inputLoopDelay.setText(storage.get("loopDelay", "3").toString());
+  ui.inputLoopDelay.setText(storage.get("loopDelay", "0").toString());
 }
 
 // Save settings on change
