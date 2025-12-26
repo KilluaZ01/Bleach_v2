@@ -25,16 +25,26 @@ function findMarkerByColor(roi, color, log) {
   var img = captureScreen();
   if (!img) return null;
 
-  // ROI (same as Python example)
-  var x1 = roi[0],
-    y1 = roi[1],
-    x2 = roi[2],
-    y2 = roi[3];
+  var imgW = img.getWidth();
+  var imgH = img.getHeight();
 
-  var threshold = 10;
+  var x1 = roi[0];
+  var y1 = roi[1];
+  var x2 = roi[2];
+  var y2 = roi[3];
+
+  // Clamp coordinates
+  x1 = Math.max(0, Math.min(x1, imgW - 1));
+  y1 = Math.max(0, Math.min(y1, imgH - 1));
+  x2 = Math.max(x1 + 1, Math.min(x2, imgW));
+  y2 = Math.max(y1 + 1, Math.min(y2, imgH));
+
+  var w = x2 - x1;
+  var h = y2 - y1;
+
   var point = images.findColor(img, color, {
-    region: [x1, y1, x2 - x1, y2 - y1],
-    threshold: threshold,
+    region: [x1, y1, w, h],
+    threshold: 10,
   });
 
   img.recycle();

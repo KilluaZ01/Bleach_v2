@@ -120,7 +120,7 @@ function navigatePlayStore(logger, gamePkgName, updateLastAction) {
   if (imageExists("play_install_button.png", logger)) {
     logger.info("Install button found, clicking...");
     findImageAndClick("play_install_button.png", logger);
-    randomSleep(4000);
+    randomSleep(6000);
   } else {
     logger.warning("Install button not found");
   }

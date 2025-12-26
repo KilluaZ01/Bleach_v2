@@ -65,10 +65,14 @@ function claimMailRewards(config, log, updateLastAction) {
   randomSleep(6000);
   click(645, 541);
   randomSleep(8000);
-  click(1, 1);
-  randomSleep(4000);
   click(54, 35);
   randomSleep(6000);
+  if (imageExists("battle_icon.png", log)) {
+    log.info("Still Not Home...");
+  } else {
+    click(54, 35);
+    randomSleep(6000);
+  }
   click(1196, 93);
   randomSleep(4000);
   click(1193, 77);
@@ -103,7 +107,7 @@ function drawTillNext(log) {
     }
 
     // 4️⃣ Rating popup
-    if (imageExists("rating.png", 0.8)) {
+    if (imageExists("rating.png", log)) {
       log.info("Rating popup detected");
       click(861, 64);
       sleep(2000);

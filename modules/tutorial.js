@@ -33,7 +33,6 @@ function runTutorialSkip(config, log, updateLastAction, shouldStop) {
       imageExists("skip_button.png", log) ||
       imageExists("skip_another.png", log)
     ) {
-      toast("Skip button detected");
       click(1180, 52); // Skip button
       randomSleep(4000);
       click(870, 533); // Confirm skip
@@ -108,7 +107,6 @@ function handleCharPrompt(config, log, updateLastAction) {
   if (imageExists("char_prompt.png", log)) {
     while (true) {
       if (imageExists("skip_button.png", log)) {
-        toast("Skip Button Found! Stopping Clicks...");
         break;
       }
       click(640, 500);
@@ -149,6 +147,10 @@ function runSenseTest(config, log, updateLastAction) {
       // ✅ Final success check
       if (imageExists("third_sense.png", log)) {
         log.success("Sense test PASSED");
+        click(1180, 52); // Skip
+        randomSleep(4000);
+        click(870, 533); // Confirm skip
+        randomSleep(4000);
         return true;
       }
     }
@@ -176,7 +178,6 @@ function handleChatPrompts(config, log, updateLastAction, setExitMainLoop) {
         imageExists("skip_button.png", log) ||
         imageExists("skip_another.png", log)
       ) {
-        toast("Skip Button Found! Stopping Clicks...");
         click(1180, 52); // Skip
         randomSleep(4000);
         click(870, 533);

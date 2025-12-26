@@ -122,9 +122,7 @@ function autoExplore(config, log, updateLastAction) {
     updateLastAction();
 
     // Small wait before next detection
-    randomSleep(
-      randomRange(config.explore.stepDelay[0], config.explore.stepDelay[1])
-    );
+    randomSleep(2000);
 
     steps++;
   }

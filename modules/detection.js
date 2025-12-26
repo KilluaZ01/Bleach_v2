@@ -43,7 +43,6 @@ function findImageAny(imageName, log) {
   var imagePath = IMG_PATH + imageName;
   var template = loadImageDirect(imagePath, log);
   if (!template) {
-    toast("❌ Failed to load template image: " + imageName);
     log.error("❌ Failed to load template image: " + imageName);
     return { found: false };
   }
@@ -62,7 +61,6 @@ function findImageAny(imageName, log) {
     log.success("✅ Image found at: (" + point.x + ", " + point.y + ")");
     return { found: true, x: point.x, y: point.y };
   } else {
-    toast("Image NOT found: " + imageName);
     log.warning("❌ Image NOT found: " + imageName);
     return { found: false };
   }
@@ -72,7 +70,6 @@ function findImageAndClick(imageName, log) {
   var imagePath = IMG_PATH + imageName;
   var template = loadImageDirect(imagePath, log);
   if (!template) {
-    toast("❌ Failed to load template image: " + imageName);
     log.error("❌ Failed to load template image: " + imageName);
     return { found: false };
   }
@@ -92,7 +89,6 @@ function findImageAndClick(imageName, log) {
     click(point.x, point.y);
     return { found: true, x: point.x, y: point.y };
   } else {
-    toast("Image NOT found: " + imageName);
     log.warning("❌ Image NOT found: " + imageName);
     return { found: false };
   }
@@ -105,7 +101,6 @@ function findImageAndClick(imageName, log) {
  */
 function findAndClick(imageName, log) {
   var result = findImageAny(imageName, log);
-  toast(result);
   if (result.found) {
     click(result.x, result.y);
     return true;

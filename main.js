@@ -59,7 +59,10 @@ module.exports.startBot = function (userConfig, logger, storage) {
     handleCharPrompt,
     handleChatPrompts,
   } = require("../AutoXBot/modules/tutorial.js");
-  const { claimAllRewards } = require("../AutoXBot/modules/rewards.js");
+  const {
+    claimAllRewards,
+    checkIfValid,
+  } = require("../AutoXBot/modules/rewards.js");
   const {
     autoExplore,
     collectResources,
