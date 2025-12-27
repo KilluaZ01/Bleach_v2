@@ -8,7 +8,7 @@
 
 var detection = require("./detection.js");
 var imageExists = detection.imageExists;
-var findAndClick = detection.findImageAndClick;
+var findImageAndClick = detection.findImageAndClick;
 var humanization = require("./humanization.js");
 var randomSleep = humanization.randomSleep;
 
@@ -118,9 +118,7 @@ function drawTillNext(log) {
 }
 
 function draw10xTill1x(log) {
-  for (var i = 0; i < 20; i++) {
-    log.info("Draw loop #" + (i + 1));
-
+  while (true) {
     // 1️⃣ Skip animation
     if (imageExists("skip_gatcha.png", log)) {
       log.info("Skipping animation...");
@@ -141,25 +139,6 @@ function draw10xTill1x(log) {
 
     // 4️⃣ Popup handling
     if (imageExists("close_button.png", log)) {
-      // Token required
-      if (imageExists("token_require.png", log)) {
-        log.info("Token required — stopping");
-        click(978, 203);
-        sleep(3000);
-        return true;
-      }
-
-      // Rating popup
-      if (imageExists("rating.png", log)) {
-        log.info("Rating popup");
-        click(861, 64);
-        sleep(2000);
-
-        log.info("Closing screen");
-        click(640, 664);
-        sleep(3000);
-      }
-
       // Confirm
       log.info("Confirming...");
       click(868, 512);
@@ -173,6 +152,12 @@ function draw10xTill1x(log) {
         return true;
       }
     }
+
+    if (imageExists("rating.png", log)) {
+      log.info("Rating popup");
+      click(861, 64);
+      sleep(2000);
+    }
   }
 
   return false;
@@ -183,9 +168,7 @@ function draw1xTill0(log) {
   click(845, 657);
   sleep(3000);
 
-  for (var i = 0; i < 20; i++) {
-    log.info("1x draw loop #" + (i + 1));
-
+  while (true) {
     // 1️⃣ Skip animation
     if (imageExists("skip_gatcha.png", log)) {
       log.info("Skipping animation");
@@ -212,6 +195,12 @@ function draw1xTill0(log) {
         log.info("Top-up detected — stopping");
         return true;
       }
+    }
+
+    if (imageExists("rating.png", log)) {
+      log.info("Rating popup");
+      click(861, 64);
+      sleep(2000);
     }
   }
 
@@ -251,6 +240,11 @@ function summoningLogic(config, log, updateLastAction) {
   click(54, 35); // Close Gatcha
   randomSleep(6000);
 
+  if (imageExists("battle_icon.png", log)) {
+    log.info("Already at Home Screen...");
+    return;
+  }
+
   click(54, 35); // Close Gatcha
   randomSleep(6000);
 
@@ -259,8 +253,20 @@ function summoningLogic(config, log, updateLastAction) {
 
 function checkIfValid(config, log, updateLastAction) {
   // Valid Accounts Checking
-  click(1092, 645);
-  randomSleep(8000);
+  if (imageExists("home_char.png", log)) {
+    findImageAndClick("home_char.png", log);
+    log.info("Inside Characters");
+    randomSleep(6000);
+  }
+
+  if (imageExists("more.png", log)) {
+    findImageAndClick("more.png", log);
+    log.info("Clicking More");
+    randomSleep(6000);
+  }
+
+  click(30, 50);
+  randomSleep(6000);
 
   if (
     findMarkerByColor([160, 158, 170, 161], "#fee761", log) &&

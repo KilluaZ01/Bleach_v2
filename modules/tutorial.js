@@ -150,7 +150,9 @@ function runSenseTest(config, log, updateLastAction) {
         click(1180, 52); // Skip
         randomSleep(4000);
         click(870, 533); // Confirm skip
-        randomSleep(4000);
+        randomSleep(10000);
+        click(645, 661);
+        randomSleep(6000);
         return true;
       }
     }
@@ -173,31 +175,24 @@ function handleChatPrompts(config, log, updateLastAction, setExitMainLoop) {
 
     runSenseTest(config, log, updateLastAction);
 
-    while (true) {
-      if (
-        imageExists("skip_button.png", log) ||
-        imageExists("skip_another.png", log)
-      ) {
-        click(1180, 52); // Skip
-        randomSleep(4000);
-        click(870, 533);
-        randomSleep(4000);
-        break;
-      }
-      click(1, 1);
-      randomSleep(1000);
-      click(1, 1);
-      randomSleep(1000);
-      click(1, 1);
-      randomSleep(1000);
-    }
-
-    click(1180, 52); // Skip
-    randomSleep(3000);
-    click(879, 533); // Skip Confirm
-    randomSleep(3000);
-    click(1, 1);
+    click(600, 1); // Global Click
     randomSleep(4000);
+    click(600, 1); // Global Click
+    randomSleep(6000);
+    click(600, 1); // Global Click
+    randomSleep(5000);
+    click(916, 454); // GO
+    randomSleep(6000);
+    click(889, 651);
+    randomSleep(6000);
+    click(845, 657);
+    randomSleep(5000);
+    click(1180, 52);
+    randomSleep(4000);
+    click(645, 661);
+    randomSleep(9000);
+    click(54, 35);
+    randomSleep(7000);
 
     // Signal to exit the main loop
     setExitMainLoop();

@@ -120,12 +120,20 @@ function navigatePlayStore(logger, gamePkgName, updateLastAction) {
   if (imageExists("play_install_button.png", logger)) {
     logger.info("Install button found, clicking...");
     findImageAndClick("play_install_button.png", logger);
-    randomSleep(6000);
+    randomSleep(8000);
   } else {
     logger.warning("Install button not found");
   }
 
   logger.info("Checking for okay button...");
+  if (imageExists("play_okay_button.png", logger)) {
+    logger.info("Okay button found, clicking...");
+    findImageAndClick("play_okay_button.png", logger);
+    randomSleep(3000);
+  } else {
+    logger.warning("Okay button not found");
+  }
+
   if (imageExists("play_okay_button.png", logger)) {
     logger.info("Okay button found, clicking...");
     findImageAndClick("play_okay_button.png", logger);

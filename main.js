@@ -233,7 +233,7 @@ module.exports.startBot = function (userConfig, logger, storage) {
         if (shouldStop()) break;
 
         // Loop delay with periodic stop checks
-        const loopDelayMs = CONFIG.loopDelay * 60 * 1000; // Convert minutes to ms
+        const loopDelayMs = 5000; // Convert minutes to ms
         log.info(`Loop complete. Waiting ${CONFIG.loopDelay} minute(s)...`);
 
         // FIXED: Break long sleep into smaller chunks to check stop signal
