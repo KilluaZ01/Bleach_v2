@@ -364,7 +364,11 @@ module.exports.startBot = function (userConfig, logger, storage) {
           validationPassed = true; // Exit the loop
         } else {
           log.warning("Validation failed. Restarting main process...");
-          cleanup(); // Clean up resources before restarting
+          home();
+          randomSleep(5000);
+          // Reset necessary state without stopping the bot
+          clearImageCache(log); // Clear resources
+          continue; // Restart the main() loop
         }
       } catch (e) {
         log.error(`Fatal error: ${e.message}`);
